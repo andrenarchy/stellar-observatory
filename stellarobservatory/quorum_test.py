@@ -1,6 +1,6 @@
 """Tests for quorum functions"""
 import pytest
-from .utils.sets import deepfreezesets, powerset
+from .utils.sets import deepfreezesets
 from .quorum import remove_from_qset_definition, get_normalized_qset_definition, \
     generate_quorum_slices
 

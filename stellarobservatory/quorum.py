@@ -56,4 +56,5 @@ def generate_quorum_slices(quorum_set_definition, mode='economic'):
         for quorum_slice_combination in quorum_slice_combinations
         ]))
 
-    return [frozenset(chain(*quorum_slice_product)) for quorum_slice_product in quorum_slice_products]
+    return [frozenset(chain(*quorum_slice_product))
+            for quorum_slice_product in quorum_slice_products]
