@@ -19,6 +19,7 @@ def get_node_dependencies(nodes_by_public_key, public_key, dependencies=None):
         dependencies = set([public_key])
 
     def traverse_quorum_set_definition(quorum_set_definition):
+        """Traverses a qset definition and adds them to the dependencies"""
         for validator in quorum_set_definition['validators']:
             if validator not in dependencies:
                 dependencies.add(validator)
