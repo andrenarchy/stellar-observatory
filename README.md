@@ -11,3 +11,7 @@ pip install stellar-observatory
 ```
 
 Note: Stellar Observatory requires Python 3.5 or above.
+
+## Example
+
+See https://colab.research.google.com/drive/1-dOgu35CWWw4J-mQnhrmjnRFkLlEXDzL
