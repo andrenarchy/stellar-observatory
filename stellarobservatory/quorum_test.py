@@ -1,5 +1,6 @@
 """Tests for quorum functions"""
 import pytest
+from .utils.sets import deepfreezesets, powerset
 from .quorum import remove_from_qset_definition, get_normalized_qset_definition, \
     generate_quorum_slices
 
@@ -34,16 +35,12 @@ def test_normalization():
     }
     assert normalized_qset_definition == expected_qset_definition
 
-def freeze_sets(sets):
-    """Deep-freeze a list of sets"""
-    return frozenset([frozenset(list(el)) for el in sets])
-
 def test_qslice_generation():
     """Test generate_quorum_slices()"""
-    expected_sets_economic = freeze_sets([{'A', 'B'}, {'A', 'C'}, {'B', 'C'}])
+    expected_sets_economic = deepfreezesets([{'A', 'B'}, {'A', 'C'}, {'B', 'C'}])
     result_economic = generate_quorum_slices(QSET_DEFINITION)
-    assert freeze_sets(result_economic) == expected_sets_economic
+    assert deepfreezesets(result_economic) == expected_sets_economic
     expected_sets_full = set(expected_sets_economic)
     expected_sets_full.add(frozenset(['A', 'B', 'C']))
     result_full = generate_quorum_slices(QSET_DEFINITION, mode='full')
-    assert freeze_sets(result_full) == expected_sets_full
+    assert deepfreezesets(result_full) == expected_sets_full
