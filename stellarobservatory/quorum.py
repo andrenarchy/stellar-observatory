@@ -66,3 +66,15 @@ def is_quorum(quorum_slices_by_public_key, quorum_candidate):
             for quorum_slice in quorum_slices_by_public_key[public_key])
         for public_key in quorum_candidate
     ])
+
+def quorum_intersection(quorums):
+    """Returns whether the quorums have intersection, which intersect, and which do not"""
+    intersecting_quorums = []
+    split_quorums = []
+    for (quorum_a, quorum_b) in combinations(quorums, 2):
+        intersection = quorum_a.intersection(quorum_b)
+        if intersection:
+            intersecting_quorums.append((quorum_a, quorum_b, intersection))
+        else:
+            split_quorums.append((quorum_a, quorum_b))
+    return len(split_quorums) == 0, intersecting_quorums, split_quorums
