@@ -1,6 +1,7 @@
 """Tests for quorum functions"""
 import pytest
-from .quorum import remove_from_qset_definition, get_normalized_qset_definition, generate_quorum_slices
+from .quorum import remove_from_qset_definition, get_normalized_qset_definition, \
+    generate_quorum_slices
 
 QSET_DEFINITION = {'threshold': 2, 'validators': ['A', 'B', 'C'], 'innerQuorumSets': []}
 QSET_DEFINITION_WITHOUT_B = {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
@@ -34,6 +35,7 @@ def test_normalization():
     assert normalized_qset_definition == expected_qset_definition
 
 def freeze_sets(sets):
+    """Deep-freeze a list of sets"""
     return frozenset([frozenset(list(el)) for el in sets])
 
 def test_qslice_generation():
