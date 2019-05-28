@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires="~=3.3",
     install_requires=[
-      "requests~=2"
+      "requests~=2.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
