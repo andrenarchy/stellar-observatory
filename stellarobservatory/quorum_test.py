@@ -1,9 +1,10 @@
 """Tests for quorum functions"""
 import pytest
-from .quorum import remove_from_qset_definition, get_normalized_qset_definition
+from .quorum import remove_from_qset_definition, get_normalized_qset_definition, generate_quorum_slices
 
 QSET_DEFINITION = {'threshold': 2, 'validators': ['A', 'B', 'C'], 'innerQuorumSets': []}
 QSET_DEFINITION_WITHOUT_B = {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
+
 @pytest.mark.parametrize('qset_definition,node,expected', [
     (QSET_DEFINITION, 'B', QSET_DEFINITION_WITHOUT_B),
     (
@@ -31,3 +32,16 @@ def test_normalization():
         'innerQuorumSets': [QSET_DEFINITION_WITHOUT_B]
     }
     assert normalized_qset_definition == expected_qset_definition
+
+def freeze_sets(sets):
+    return frozenset([frozenset(list(el)) for el in sets])
+
+def test_qslice_generation():
+    """Test generate_quorum_slices()"""
+    expected_sets_economic = freeze_sets([{'A', 'B'}, {'A', 'C'}, {'B', 'C'}])
+    result_economic = generate_quorum_slices(QSET_DEFINITION)
+    assert freeze_sets(result_economic) == expected_sets_economic
+    expected_sets_full = set(expected_sets_economic)
+    expected_sets_full.add(frozenset(['A', 'B', 'C']))
+    result_full = generate_quorum_slices(QSET_DEFINITION, mode='full')
+    assert freeze_sets(result_full) == expected_sets_full
