@@ -5,7 +5,8 @@ python:
   - "3.5"
   - "3.6"
 install:
-  - pip install pytest
+  - pip install -r requirements.txt
   - pip install -e .
 script:
+  - pylint setup.py stellarobservatory
   - pytest
