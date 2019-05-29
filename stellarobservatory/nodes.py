@@ -2,7 +2,7 @@
 import requests
 
 def get_nodes_from_stellarbeat():
-    """Fetch nodes from stellarport.io"""
+    """Fetch nodes from stellarbeat.io"""
     return requests.get('https://api.stellarbeat.io/v1/nodes').json()
 
 def get_nodes_by_public_key(nodes):
