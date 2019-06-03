@@ -24,7 +24,7 @@ See https://colab.research.google.com/drive/1-dOgu35CWWw4J-mQnhrmjnRFkLlEXDzL
 ### Upload new version
 
 ```
-rm dist/*
+rm -rf dist/*
 python3 setup.py sdist bdist_wheel
 python3 -m twine upload dist/*
 ```
