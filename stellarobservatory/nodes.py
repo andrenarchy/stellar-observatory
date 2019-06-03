@@ -11,7 +11,11 @@ def get_nodes_by_public_key(nodes):
 
 def convert_public_keys_to_names(nodes_by_public_key, public_keys):
     """Convert a set/list of node public keys to a set of names"""
-    return set([nodes_by_public_key[public_key]['name'] for public_key in public_keys])
+    return set([
+        nodes_by_public_key[public_key]['name'] if 'name' in nodes_by_public_key[public_key] \
+        else public_key \
+        for public_key in public_keys
+    ])
 
 def get_node_dependencies(nodes_by_public_key, public_key, dependencies=None):
     """Get public keys of all nodes a node depends on (also transitively)"""
