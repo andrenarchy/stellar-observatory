@@ -85,7 +85,7 @@ def get_minimal_quorum_intersection(quorums):
     for (quorum_a, quorum_b) in combinations(quorums, 2):
         intersection = quorum_a.intersection(quorum_b)
         if not intersection:
-            return None
+            return None, quorum_a, quorum_b
         if minimal_intersection is None or len(intersection) < len(minimal_intersection[0]): #pylint: disable=unsubscriptable-object
             minimal_intersection = intersection, quorum_a, quorum_b
     return minimal_intersection

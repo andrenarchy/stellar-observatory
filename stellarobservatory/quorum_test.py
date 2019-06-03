@@ -84,5 +84,6 @@ def test_minimal_intersection():
 def test_minimal_intersection_fail():
     """Test get_minimal_quorum_intersection()"""
     quorums = deepfreezesets([{'A', 'B'}, {'B', 'C'}, {'C', 'D'}])
-    minimal_intersection = get_minimal_quorum_intersection(quorums)
-    assert minimal_intersection is None
+    intersection, quorum_a, quorum_b = get_minimal_quorum_intersection(quorums)
+    assert intersection is None
+    assert quorum_a.intersection(quorum_b) == set()
