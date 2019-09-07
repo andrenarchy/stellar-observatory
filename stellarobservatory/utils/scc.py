@@ -7,7 +7,7 @@ def get_strongly_connected_components(graph):
     """
     Get strongly connected components for a directed graph
 
-    The returned list of components is ordered by dependency, i.e.,
+    The returned list of components is in reverse topological order, i.e.,
     such that the nodes in the first component have no dependencies on
     other components.
     """
