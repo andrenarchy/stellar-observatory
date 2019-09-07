@@ -90,7 +90,7 @@ def get_minimal_quorum_intersection(quorums):
             minimal_intersection = intersection, quorum_a, quorum_b
     return minimal_intersection
 
-def has_quorum_intersection(nodes, slices):
+def has_quorum_intersection(nodes, slices): #pylint: disable=unused-argument
     """
     Checks if the given FBAS enjoys quorum intersection. This implementation
     is a python port of what was integrated into stellar-core via
@@ -101,12 +101,14 @@ def has_quorum_intersection(nodes, slices):
     and https://github.com/fixxxedpoint/quorum_intersection.git
 
     :param nodes: The nodes of the FBAS.
-    :param slices: The quorum slices belonging to each node (len(nodes) == len(slices) needs to be true otherwise
+    :param slices: The quorum slices belonging to each node
+    (len(nodes) == len(slices) needs to be true otherwise
     an exception will be raised=.
     :return: True if the given FBAS enjoys quorum intersection
     and False if there are any two disjoint quorums.
     """
-    # TODO:
+    # TODO: #pylint: disable=fixme
+    #  - re-enable some linters
     #  - write all sorts of tests (for everything below)
     #  - implement "fix-point quorum checker":
     #     - copy & paste: for each node Nᵢ ∈ S, remove Nᵢ from S if S
@@ -117,7 +119,8 @@ def has_quorum_intersection(nodes, slices):
     #     - check if any SCC which is not the largest has any quorums,
     #       then we are done -> no intersection
     #  - iterate over all nodes which are in the largest SCC only
-    #    (instead of the powerset of all the nodes) and use this as a search space for disjoint quorums
+    #    (instead of the powerset of all the nodes) and use this as a search space for disjoint
+    #    quorums
     #
 
 
@@ -128,7 +131,8 @@ def contract_to_maximal_quorum(nodes, slices_by_node):
     https://github.com/stellar/stellar-core/blob/27576172e99d89cbacfe6571f807a5e85746f618/src/herder/QuorumIntersectionCheckerImpl.cpp#L459-L460
 
     :param nodes: The nodes to contract to a maximal quorum.
-    :param slices_by_node: The quorum slices of the FBAS as a dictionary (nodes as key, slices as value).
+    :param slices_by_node: The quorum slices of the FBAS as a
+    dictionary (nodes as key, slices as value).
     :return: Either a set that represents the maximal quorum contained within
     the given set of nodes or an empty set if it didn't contain any quorums.
     In both cases this is the fixpoint of
@@ -137,13 +141,14 @@ def contract_to_maximal_quorum(nodes, slices_by_node):
 
     while True:
         filtered = set()
-        for n in nodes:
-            if contains_quorum_slice(nodes, slices_by_node[n]):
-                filtered.add(n)
-        if filtered == nodes or filtered == {}:
+        for node in nodes:
+            if contains_quorum_slice(nodes, slices_by_node[node]):
+                filtered.add(node)
+        if filtered in (nodes, {}):
             return filtered
         nodes = filtered
 
 
 def contains_quorum_slice(nodes_subset, slices):
+    """Check if for the given nodes and slices there is a quorum"""
     return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices)
