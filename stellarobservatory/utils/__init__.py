@@ -1,3 +1,4 @@
 """Stellar Observatory utilities"""
 from . import sets
-__all__ = ['sets']
+from . import scc
+__all__ = ['sets', 'scc']
