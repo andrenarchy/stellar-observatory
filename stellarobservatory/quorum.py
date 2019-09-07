@@ -108,7 +108,6 @@ def has_quorum_intersection(nodes, slices):
     """
     # TODO:
     #  - write all sorts of tests (for everything below)
-    #  - figure out which SCC lib to use (Tarjan)
     #  - implement "fix-point quorum checker":
     #     - copy & paste: for each node Nᵢ ∈ S, remove Nᵢ from S if S
     #       does not satisfy QSᵢ, and keep iterating this procedure until it reaches a
@@ -120,3 +119,31 @@ def has_quorum_intersection(nodes, slices):
     #  - iterate over all nodes which are in the largest SCC only
     #    (instead of the powerset of all the nodes) and use this as a search space for disjoint quorums
     #
+
+
+def contract_to_maximal_quorum(nodes, slices_by_node):
+    """
+    Find greatest fixpoint of f(X) = {n ∈ X | containsQuorumSliceForNode(X, n)}.
+    A simple (and non-optimized) implementation of:
+    https://github.com/stellar/stellar-core/blob/27576172e99d89cbacfe6571f807a5e85746f618/src/herder/QuorumIntersectionCheckerImpl.cpp#L459-L460
+
+    :param nodes: The nodes to contract to a maximal quorum.
+    :param slices_by_node: The quorum slices of the FBAS as a dictionary (nodes as key, slices as value).
+    :return: Either a set that represents the maximal quorum contained within
+    the given set of nodes or an empty set if it didn't contain any quorums.
+    In both cases this is the fixpoint of
+    f(X) = {n ∈ X | containsQuorumSliceForNode(X, n)}.
+    """
+
+    while True:
+        filtered = set()
+        for n in nodes:
+            if contains_quorum_slice(nodes, slices_by_node[n]):
+                filtered.add(n)
+        if filtered == nodes or filtered == {}:
+            return filtered
+        nodes = filtered
+
+
+def contains_quorum_slice(nodes_subset, slices):
+    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices)
