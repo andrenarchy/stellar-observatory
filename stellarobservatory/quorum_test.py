@@ -2,7 +2,7 @@
 import pytest
 from .utils.sets import deepfreezesets
 from .quorum import remove_from_qset_definition, get_normalized_qset_definition, \
-    get_minimal_quorum_intersection, generate_quorum_slices, is_quorum, quorum_intersection
+    get_minimal_quorum_intersection, generate_quorum_slices, is_quorum, quorum_intersection, contract_to_maximal_quorum
 
 QSET_DEFINITION = {'threshold': 2, 'validators': ['A', 'B', 'C'], 'innerQuorumSets': []}
 QSET_DEFINITION_WITHOUT_B = {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
@@ -87,3 +87,21 @@ def test_minimal_intersection_fail():
     intersection, quorum_a, quorum_b = get_minimal_quorum_intersection(quorums)
     assert intersection is None
     assert quorum_a.intersection(quorum_b) == set()
+
+def test_contract_to_maximal_quorum():
+    """Test contract_to_maximal_quorum()"""
+    quorum_slices_by_public_key = {
+        'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
+        'B': [{'A', 'B'}],
+        'C': [{'A', 'B', 'C', 'D'}]
+    }
+    # Quorum (gets contracted):
+    assert contract_to_maximal_quorum({'A', 'B', 'C'}, quorum_slices_by_public_key) == {'A', 'B'}
+    # Quorum (already maximal):
+    assert contract_to_maximal_quorum({'A', 'B'}, quorum_slices_by_public_key) == {'A', 'B'}
+    # No quorum:
+    assert contract_to_maximal_quorum({'B', 'C'}, quorum_slices_by_public_key) == set()
+    assert contract_to_maximal_quorum({'A'}, quorum_slices_by_public_key) == set()
+    assert contract_to_maximal_quorum({'B'}, quorum_slices_by_public_key) == set()
+    assert contract_to_maximal_quorum({'C'}, quorum_slices_by_public_key) == set()
+
