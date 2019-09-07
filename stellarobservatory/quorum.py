@@ -89,3 +89,34 @@ def get_minimal_quorum_intersection(quorums):
         if minimal_intersection is None or len(intersection) < len(minimal_intersection[0]): #pylint: disable=unsubscriptable-object
             minimal_intersection = intersection, quorum_a, quorum_b
     return minimal_intersection
+
+def has_quorum_intersection(nodes, slices):
+    """
+    Checks if the given FBAS enjoys quorum intersection. This implementation
+    is a python port of what was integrated into stellar-core via
+    https://github.com/stellar/stellar-core/pull/2127
+
+    The algorithm was presented by Łukasz Lachowski <l.lachowski@gmail.com> in
+    https://arxiv.org/pdf/1902.06493.pdf
+    and https://github.com/fixxxedpoint/quorum_intersection.git
+
+    :param nodes: The nodes of the FBAS.
+    :param slices: The quorum slices belonging to each node (len(nodes) == len(slices) needs to be true otherwise
+    an exception will be raised=.
+    :return: True if the given FBAS enjoys quorum intersection
+    and False if there are any two disjoint quorums.
+    """
+    # TODO:
+    #  - write all sorts of tests (for everything below)
+    #  - figure out which SCC lib to use (Tarjan)
+    #  - implement "fix-point quorum checker":
+    #     - copy & paste: for each node Nᵢ ∈ S, remove Nᵢ from S if S
+    #       does not satisfy QSᵢ, and keep iterating this procedure until it reaches a
+    #       fixpoint. The fixpoint will either be empty (in which case S contained no
+    #       quorum) or the largest quorum contained within S.
+    #  - compute all SCCs
+    #     - check if any SCC which is not the largest has any quorums,
+    #       then we are done -> no intersection
+    #  - iterate over all nodes which are in the largest SCC only
+    #    (instead of the powerset of all the nodes) and use this as a search space for disjoint quorums
+    #
