@@ -1,5 +1,6 @@
 """Quorum slices and quorums"""
 from itertools import chain, combinations, product
+from .utils import scc
 
 def remove_from_qset_definition(qset_definition, node):
     """Return quorum set definition with the given node removed and the threshold reduced by 1"""
@@ -90,7 +91,7 @@ def get_minimal_quorum_intersection(quorums):
             minimal_intersection = intersection, quorum_a, quorum_b
     return minimal_intersection
 
-def has_quorum_intersection(nodes, slices): #pylint: disable=unused-argument
+def has_quorum_intersection(nodes, slices):
     """
     Checks if the given FBAS enjoys quorum intersection. This implementation
     is a python port of what was integrated into stellar-core via
@@ -116,7 +117,11 @@ def has_quorum_intersection(nodes, slices): #pylint: disable=unused-argument
     #  - iterate over all nodes which are in the largest SCC only
     #    (instead of the powerset of all the nodes) and use this as a search space for disjoint
     #    quorums
-    #
+
+    # compute all components
+    sccs = scc.get_strongly_connected_components(slices)
+
+
 
 
 def contract_to_maximal_quorum(nodes, slices_by_node):
