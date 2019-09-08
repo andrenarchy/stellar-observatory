@@ -1,6 +1,7 @@
 """Quorum slices and quorums"""
 from itertools import chain, combinations, product
 from .utils import scc
+from .quorum_slices import get_dependencies_by_node
 
 def remove_from_qset_definition(qset_definition, node):
     """Return quorum set definition with the given node removed and the threshold reduced by 1"""
@@ -61,7 +62,7 @@ def generate_quorum_slices(quorum_set_definition, mode='economic'):
             for quorum_slice_product in quorum_slice_products]
 
 def is_quorum(quorum_slices_by_public_key, quorum_candidate):
-    """Given quorum slices , determine whether a quorum candidate is a quorum"""
+    """Given quorum slices, determine whether a quorum candidate is a quorum"""
     return all([
         any(quorum_slice.issubset(quorum_candidate)
             for quorum_slice in quorum_slices_by_public_key[public_key])
@@ -91,7 +92,7 @@ def get_minimal_quorum_intersection(quorums):
             minimal_intersection = intersection, quorum_a, quorum_b
     return minimal_intersection
 
-def has_quorum_intersection(nodes, slices):
+def has_quorum_intersection(nodes, slices_by_node):
     """
     Checks if the given FBAS enjoys quorum intersection. This implementation
     is a python port of what was integrated into stellar-core via
@@ -119,7 +120,17 @@ def has_quorum_intersection(nodes, slices):
     #    quorums
 
     # compute all components
-    sccs = scc.get_strongly_connected_components(slices)
+    sccs = scc.get_strongly_connected_components(get_dependencies_by_node(slices_by_node))
+
+    # make sure only one SCC contains all minimal quorums (the last regarding the topological order):
+    non_intersection_Quorums_counter = 0
+    for component in sccs:
+        contains_quorum = len(contract_to_maximal_quorum(component, slices_by_node)) != 0
+        if contains_quorum:
+            non_intersection_Quorums_counter += 1
+
+    if non_intersection_Quorums_counter > 1:
+        return False
 
 
 

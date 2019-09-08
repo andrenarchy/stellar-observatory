@@ -3,7 +3,7 @@ import pytest
 from .utils.sets import deepfreezesets
 from .quorum import remove_from_qset_definition, get_normalized_qset_definition, \
     get_minimal_quorum_intersection, generate_quorum_slices, is_quorum, quorum_intersection, \
-    contract_to_maximal_quorum
+    contract_to_maximal_quorum, has_quorum_intersection
 
 QSET_DEFINITION = {'threshold': 2, 'validators': ['A', 'B', 'C'], 'innerQuorumSets': []}
 QSET_DEFINITION_WITHOUT_B = {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
@@ -74,6 +74,19 @@ def test_quorum_intersection_fail():
     assert len(intersection_quorums) == 2
     assert len(split_quorums) == 1
     assert frozenset(split_quorums[0]) == deepfreezesets([{'A', 'B'}, {'C', 'D'}])
+
+def test_has_quorum_intersection():
+    """Test has_quorum_intersection()"""
+    quorum_slices_by_node = {
+        'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
+        'B': [{'A', 'B'}],
+        'C': [{'A', 'B', 'C', 'D'}],
+        'D': [{'D'}]
+    }
+
+    has_quorum_intersection({'A', 'B', 'C', 'D'}, quorum_slices_by_node)
+
+
 
 def test_minimal_intersection():
     """Test get_minimal_quorum_intersection()"""

@@ -1,4 +1,2 @@
 pylint~=2.0
 pytest~=5.0
-numpy~=1.17
-scipy~=1.3
