@@ -110,11 +110,6 @@ def has_quorum_intersection(nodes, slices): #pylint: disable=unused-argument
     # TODO: #pylint: disable=fixme
     #  - re-enable some linters
     #  - write all sorts of tests (for everything below)
-    #  - implement "fix-point quorum checker":
-    #     - copy & paste: for each node Nᵢ ∈ S, remove Nᵢ from S if S
-    #       does not satisfy QSᵢ, and keep iterating this procedure until it reaches a
-    #       fixpoint. The fixpoint will either be empty (in which case S contained no
-    #       quorum) or the largest quorum contained within S.
     #  - compute all SCCs
     #     - check if any SCC which is not the largest has any quorums,
     #       then we are done -> no intersection
