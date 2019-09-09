@@ -75,8 +75,9 @@ def test_quorum_intersection_fail():
     assert len(split_quorums) == 1
     assert frozenset(split_quorums[0]) == deepfreezesets([{'A', 'B'}, {'C', 'D'}])
 
-def test_has_quorum_intersection():
+def test_has_quorum_intersection_False():
     """Test has_quorum_intersection()"""
+    # Basically two disjoint quorums {A, B} and {D} (two SCCs)
     quorum_slices_by_node = {
         'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
         'B': [{'A', 'B'}],
@@ -84,8 +85,18 @@ def test_has_quorum_intersection():
         'D': [{'D'}]
     }
 
-    has_quorum_intersection({'A', 'B', 'C', 'D'}, quorum_slices_by_node)
+    assert has_quorum_intersection({1, 2, 3, 4}, quorum_slices_by_node) is False
 
+def test_has_quorum_intersection_True():
+    """Test has_quorum_intersection()"""
+    # One SCC containing quorum {A, B}
+    quorum_slices_by_node = {
+        'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
+        'B': [{'A', 'B'}],
+        'C': [{'A', 'B', 'C'}]
+    }
+
+    assert has_quorum_intersection({1, 2, 3, 4}, quorum_slices_by_node) is True
 
 
 def test_minimal_intersection():

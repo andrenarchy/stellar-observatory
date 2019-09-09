@@ -1,4 +1,6 @@
 """Quorum slices and quorums"""
+import logging
+
 from itertools import chain, combinations, product
 from .utils import scc
 from .quorum_slices import get_dependencies_by_node
@@ -112,27 +114,31 @@ def has_quorum_intersection(nodes, slices_by_node):
     # TODO: #pylint: disable=fixme
     #  - re-enable some linters
     #  - write all sorts of tests (for everything below)
-    #  - compute all SCCs
-    #     - check if any SCC which is not the largest has any quorums,
-    #       then we are done -> no intersection
     #  - iterate over all nodes which are in the largest SCC only
     #    (instead of the powerset of all the nodes) and use this as a search space for disjoint
     #    quorums
 
     # compute all components
-    sccs = scc.get_strongly_connected_components(get_dependencies_by_node(slices_by_node))
+    deps_by_node = get_dependencies_by_node(slices_by_node)
+    sccs = scc.get_strongly_connected_components(deps_by_node)
 
     # make sure only one SCC contains all minimal quorums (the last regarding the topological order):
     non_intersection_Quorums_counter = 0
     for component in sccs:
         contains_quorum = len(contract_to_maximal_quorum(component, slices_by_node)) != 0
+        logging.debug("SCC: %s contains a quorum: %s", component, contract_to_maximal_quorum(component, slices_by_node))
         if contains_quorum:
             non_intersection_Quorums_counter += 1
 
     if non_intersection_Quorums_counter > 1:
+        logging.debug("Found more than one SCC containing quorums. No intersection.")
         return False
 
+    last_scc = sccs.pop()
+    logging.debug("last scc: %s", last_scc)
 
+
+    return True
 
 
 def contract_to_maximal_quorum(nodes, slices_by_node):
