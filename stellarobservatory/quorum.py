@@ -111,32 +111,29 @@ def has_quorum_intersection(nodes, slices_by_node):
     :return: True if the given FBAS enjoys quorum intersection
     and False if there are any two disjoint quorums.
     """
-    # TODO: #pylint: disable=fixme
-    #  - re-enable some linters
-    #  - write all sorts of tests (for everything below)
-    #  - iterate over all nodes which are in the largest SCC only
-    #    (instead of the powerset of all the nodes) and use this as a search space for disjoint
-    #    quorums
-
     # compute all components
     deps_by_node = get_dependencies_by_node(slices_by_node)
     sccs = scc.get_strongly_connected_components(deps_by_node)
 
-    # make sure only one SCC contains all minimal quorums (the last regarding the topological order):
-    non_intersection_Quorums_counter = 0
+    # make sure only one SCC contains all minimal quorums
+    # (the last regarding the topological order):
+    non_intersection_quorums_counter = 0
     for component in sccs:
         contains_quorum = len(contract_to_maximal_quorum(component, slices_by_node)) != 0
-        logging.debug("SCC: %s contains a quorum: %s", component, contract_to_maximal_quorum(component, slices_by_node))
+        logging.debug("SCC: %s contains a quorum: %s", component,
+                      contract_to_maximal_quorum(component, slices_by_node))
         if contains_quorum:
-            non_intersection_Quorums_counter += 1
+            non_intersection_quorums_counter += 1
 
-    if non_intersection_Quorums_counter > 1:
+    if non_intersection_quorums_counter > 1:
         logging.debug("Found more than one SCC containing quorums. No intersection.")
         return False
 
     last_scc = sccs.pop()
     logging.debug("last scc: %s", last_scc)
-
+    #  iterate over all nodes which are in the largest SCC only
+    #    (instead of the powerset of all the nodes) and use this as a search space for disjoint
+    #    quorums
 
     return True
 
