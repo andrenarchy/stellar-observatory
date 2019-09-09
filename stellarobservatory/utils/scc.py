@@ -19,7 +19,8 @@ def get_strongly_connected_components(graph):
         row_indexes += [node_index_by_node[node]] * len(targets)
         col_indexes += [node_index_by_node[target] for target in targets]
     data = numpy.ones((len(row_indexes)), dtype=int)
-    csgraph = csr_matrix((data, (row_indexes, col_indexes)))
+    N = len(nodes)
+    csgraph = csr_matrix((data, (row_indexes, col_indexes)), shape=(N, N))
     n_components, labels = connected_components(csgraph, directed=True, connection='strong')
     sccs = [[] for i in range(n_components)]
     for index, label in enumerate(labels):
