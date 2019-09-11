@@ -105,7 +105,7 @@ def has_quorum_intersection(nodes, slices_by_node):
     and https://github.com/fixxxedpoint/quorum_intersection.git
 
     :param nodes: The nodes of the FBAS.
-    :param slices: The quorum slices belonging to each node
+    :param slices_by_node: The quorum slices belonging to each node
     (len(nodes) == len(slices) needs to be true otherwise
     an exception will be raised=.
     :return: True if the given FBAS enjoys quorum intersection
@@ -131,11 +131,36 @@ def has_quorum_intersection(nodes, slices_by_node):
 
     last_scc = sccs.pop()
     logging.debug("last scc: %s", last_scc)
-    #  iterate over all nodes which are in the largest SCC only
-    #    (instead of the powerset of all the nodes) and use this as a search space for disjoint
-    #    quorums
+    last_scc_max_quorum = contract_to_maximal_quorum(last_scc, slices_by_node)
+    if not last_scc_max_quorum:
+        logging.debug("No quorum found in transitive closure.")
+        return False
+
+    logging.debug("Maximal main scc: %s", last_scc_max_quorum)
+    max_commit_size = (len(last_scc_max_quorum) / 2) + 1
+
+    # start recursion with ∅, SCC:
+    committed, remaining = set(), last_scc_max_quorum
+    #  iterate over all nodes which are in the largest SCC only (instead of the powerset of all
+    #  the nodes) and use this as a search space for disjoint quorums
+    all_min_quorums_intersect(committed, remaining, max_commit_size)
 
     return True
+
+def all_min_quorums_intersect(committed, remaining, max_commit_size):
+    """
+    Main recursion that cleverly splits checking if all quorums intersect.
+    It only checks necessary recursion branches and exits early where possible.
+
+    :param committed:
+    :param remaining:
+    :param max_commit_size:
+    :return:
+    """
+    perimeter = committed.union(remaining)
+    # First early exit
+    if len(committed) > max_commit_size:
+        return False
 
 
 def contract_to_maximal_quorum(nodes, slices_by_node):
@@ -166,3 +191,13 @@ def contract_to_maximal_quorum(nodes, slices_by_node):
 def contains_quorum_slice(nodes_subset, slices):
     """Check if for the given nodes and slices there is a quorum"""
     return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices)
+
+def next_split_node(nodes_subset):
+    """Choose the next split node to process: uniformly at random pick a node with max in-degree.
+
+    Note: In Lachowski's paper it is not explicitly stated how to pick the next node.
+    Compare:
+     - https://github.com/fixxxedpoint/quorum_intersection/blob/21ea81224a2e4f887ee010bd689980bbacb0addb/quorum_intersection.cpp#L204:8
+     - https://github.com/stellar/stellar-core/blob/27576172e99d89cbacfe6571f807a5e85746f618/src/herder/QuorumIntersectionCheckerImpl.cpp#L137
+    """
+    # TODO: figure out params and actually pick a node with max in-degree ...

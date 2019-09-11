@@ -96,7 +96,7 @@ def test_has_quorum_intersection_true():
         'C': [{'A', 'B', 'C'}]
     }
 
-    assert has_quorum_intersection({1, 2, 3, 4}, quorum_slices_by_node) is True
+    assert has_quorum_intersection({'A', 'B', 'C', 'D'}, quorum_slices_by_node) is True
 
 
 def test_minimal_intersection():
