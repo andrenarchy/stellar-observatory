@@ -125,7 +125,7 @@ def has_quorum_intersection(nodes, slices_by_node):
         if contains_quorum:
             non_intersection_quorums_counter += 1
 
-    if non_intersection_quorums_counter > 1:
+    if non_intersection_quorums_counter != 1:
         logging.debug("Found more than one SCC containing quorums. No intersection.")
         return False
 
@@ -143,9 +143,8 @@ def has_quorum_intersection(nodes, slices_by_node):
     committed, remaining = set(), last_scc_max_quorum
     #  iterate over all nodes which are in the largest SCC only (instead of the powerset of all
     #  the nodes) and use this as a search space for disjoint quorums
-    all_min_quorums_intersect(committed, remaining, max_commit_size)
 
-    return True
+    return all_min_quorums_intersect(committed, remaining, max_commit_size)
 
 def all_min_quorums_intersect(committed, remaining, max_commit_size):
     """
@@ -162,6 +161,7 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size):
     if len(committed) > max_commit_size:
         return False
 
+    return True
 
 def contract_to_maximal_quorum(nodes, slices_by_node):
     """
@@ -181,16 +181,17 @@ def contract_to_maximal_quorum(nodes, slices_by_node):
     while True:
         filtered = set()
         for node in nodes:
-            if contains_quorum_slice(nodes, slices_by_node[node]):
+            if contains_quorum_slice(nodes, slices_by_node, node):
                 filtered.add(node)
         if filtered in (nodes, {}):
             return filtered
         nodes = filtered
 
 
-def contains_quorum_slice(nodes_subset, slices):
-    """Check if for the given nodes and slices there is a quorum"""
-    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices)
+def contains_quorum_slice(nodes_subset, slices, node):
+    """Check if for the given nodes and quorum slices there is a quorum slice
+    contained in the set of given nodes."""
+    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices[node])
 
 def next_split_node(nodes_subset):
     """Choose the next split node to process: uniformly at random pick a node with max in-degree.
