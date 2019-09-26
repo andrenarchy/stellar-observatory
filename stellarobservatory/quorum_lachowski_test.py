@@ -27,7 +27,16 @@ def test_has_quorum_intersection_false():
         'D': [{'D'}]
     }
 
-    assert has_quorum_intersection({1, 2, 3, 4}, quorum_slices_by_node) is False
+    assert has_quorum_intersection({'A', 'B', 'C', 'D'}, quorum_slices_by_node) is False
+
+def test_has_quorum_intersection_false_in_scc():
+    slices_by_node = {
+        1: [{1, 2}, {1, 3}, {1, 4}],
+        2: [{2, 1}, {2, 3}, {2, 4}],
+        3: [{1, 3}, {2, 3}, {3, 4}],
+        4: [{1, 4}, {2, 4}, {3, 4}]
+    }
+    assert has_quorum_intersection({1, 2, 3, 4}, slices_by_node) is False
 
 def test_has_quorum_intersection_true():
     """Test has_quorum_intersection()"""
@@ -39,4 +48,3 @@ def test_has_quorum_intersection_true():
     }
 
     assert has_quorum_intersection({'A', 'B', 'C', 'D'}, quorum_slices_by_node) is True
-

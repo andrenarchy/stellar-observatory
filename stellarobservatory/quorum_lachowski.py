@@ -96,7 +96,7 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, max_scc, sl
     remaining_without_split = remaining.difference({split_node})
     return all_min_quorums_intersect(committed, remaining_without_split, max_commit_size, \
                                      max_scc, slices_by_node, deps_by_node) and \
-        all_min_quorums_intersect(committed.union(split_node), remaining_without_split, max_commit_size, \
+        all_min_quorums_intersect(committed.union({split_node}), remaining_without_split, max_commit_size, \
                                      max_scc, slices_by_node, deps_by_node)
 
 def is_quorum(nodes, slices_by_node):
