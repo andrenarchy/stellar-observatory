@@ -38,6 +38,14 @@ def test_has_quorum_intersection_false_in_scc():
     }
     assert has_quorum_intersection({1, 2, 3, 4}, slices_by_node) is False
 
+def test_has_quorum_intersection_false_double_max_scc():
+    slices_by_node = {
+        1: [{1, 2, 3}],
+        2: [{2}],
+        3: [{3}]
+    }
+    assert has_quorum_intersection({1, 2, 3}, slices_by_node) is False
+
 def test_has_quorum_intersection_true():
     """Test has_quorum_intersection()"""
     # One SCC containing quorum {A, B}
@@ -48,3 +56,13 @@ def test_has_quorum_intersection_true():
     }
 
     assert has_quorum_intersection({'A', 'B', 'C', 'D'}, quorum_slices_by_node) is True
+
+def test_has_quorum_intersection_true_sccs():
+    slices_by_node = {
+        1: [{1, 2}, {1, 3}],
+        2: [{2, 1}, {2, 3}],
+        3: [{1, 3}, {2, 3}],
+        4: [{1, 4}],
+        5: [{2, 5}]
+    }
+    assert has_quorum_intersection({1, 2, 3, 4, 5}, slices_by_node) is True
