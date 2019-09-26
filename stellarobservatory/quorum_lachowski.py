@@ -109,20 +109,16 @@ def is_minimal_quorum(nodes, slices_by_node):
     return True
 
 def contract_to_maximal_quorum(nodes, slices_by_node):
-    """
+    """Contract nodes to a maximal quorum.
+
     Find greatest fixpoint of f(X) = {n ∈ X | containsQuorumSliceForNode(X, n)}.
     A simple (and non-optimized) implementation of:
     https://github.com/stellar/stellar-core/blob/27576172e99d89cbacfe6571f807a5e85746f618/src/herder/QuorumIntersectionCheckerImpl.cpp#L459-L460
 
-    :param nodes: The nodes to contract to a maximal quorum.
-    :param slices_by_node: The quorum slices of the FBAS as a
-    dictionary (nodes as key, slices as value).
-    :return: Either a set that represents the maximal quorum contained within
+    Returns either a maximal quorum contained within
     the given set of nodes or an empty set if it didn't contain any quorums.
-    In both cases this is the fixpoint of
-    f(X) = {n ∈ X | containsQuorumSliceForNode(X, n)}.
+    In both cases this is the fixpoint of f(X) = {n ∈ X | containsQuorumSliceForNode(X, n)}.
     """
-
     while True:
         filtered = set()
         for node in nodes:
@@ -131,7 +127,6 @@ def contract_to_maximal_quorum(nodes, slices_by_node):
         if filtered in (nodes, {}):
             return filtered
         nodes = filtered
-
 
 def contains_quorum_slice(nodes_subset, slices, node):
     """Check if for the given nodes and quorum slices there is a quorum slice
