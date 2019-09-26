@@ -2,8 +2,7 @@
 import pytest
 from .utils.sets import deepfreezesets
 from .quorum import remove_from_qset_definition, get_normalized_qset_definition, \
-    get_minimal_quorum_intersection, generate_quorum_slices, is_quorum, quorum_intersection, \
-    contract_to_maximal_quorum, has_quorum_intersection
+    get_minimal_quorum_intersection, generate_quorum_slices, is_quorum, quorum_intersection
 
 QSET_DEFINITION = {'threshold': 2, 'validators': ['A', 'B', 'C'], 'innerQuorumSets': []}
 QSET_DEFINITION_WITHOUT_B = {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
@@ -75,30 +74,6 @@ def test_quorum_intersection_fail():
     assert len(split_quorums) == 1
     assert frozenset(split_quorums[0]) == deepfreezesets([{'A', 'B'}, {'C', 'D'}])
 
-def test_has_quorum_intersection_false():
-    """Test has_quorum_intersection()"""
-    # Basically two disjoint quorums {A, B} and {D} (two SCCs)
-    quorum_slices_by_node = {
-        'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
-        'B': [{'A', 'B'}],
-        'C': [{'A', 'B', 'C', 'D'}],
-        'D': [{'D'}]
-    }
-
-    assert has_quorum_intersection({1, 2, 3, 4}, quorum_slices_by_node) is False
-
-def test_has_quorum_intersection_true():
-    """Test has_quorum_intersection()"""
-    # One SCC containing quorum {A, B}
-    quorum_slices_by_node = {
-        'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
-        'B': [{'A', 'B'}],
-        'C': [{'A', 'B', 'C'}]
-    }
-
-    assert has_quorum_intersection({'A', 'B', 'C', 'D'}, quorum_slices_by_node) is True
-
-
 def test_minimal_intersection():
     """Test get_minimal_quorum_intersection()"""
     quorums = deepfreezesets([{'A', 'B'}, {'A', 'C'}, {'B', 'C'}])
@@ -112,20 +87,3 @@ def test_minimal_intersection_fail():
     intersection, quorum_a, quorum_b = get_minimal_quorum_intersection(quorums)
     assert intersection is None
     assert quorum_a.intersection(quorum_b) == set()
-
-def test_contract_to_maximal_quorum():
-    """Test contract_to_maximal_quorum()"""
-    quorum_slices_by_public_key = {
-        'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
-        'B': [{'A', 'B'}],
-        'C': [{'A', 'B', 'C', 'D'}]
-    }
-    # Quorum (gets contracted):
-    assert contract_to_maximal_quorum({'A', 'B', 'C'}, quorum_slices_by_public_key) == {'A', 'B'}
-    # Quorum (already maximal):
-    assert contract_to_maximal_quorum({'A', 'B'}, quorum_slices_by_public_key) == {'A', 'B'}
-    # No quorum:
-    assert contract_to_maximal_quorum({'B', 'C'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'A'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'B'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'C'}, quorum_slices_by_public_key) == set()
