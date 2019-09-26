@@ -91,6 +91,8 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, max_scc, sl
         return True
 
     split_node = next_split_node(remaining, deps_by_node)
+    logging.debug('Remaining: {0}'.format(remaining))
+    logging.debug('Split node: {0}'.format(split_node))
     remaining_without_split = remaining.difference({split_node})
     return all_min_quorums_intersect(committed, remaining_without_split, max_commit_size, \
                                      max_scc, slices_by_node, deps_by_node) and \
@@ -149,5 +151,6 @@ def next_split_node(nodes_subset, deps_by_node):
      - https://github.com/fixxxedpoint/quorum_intersection/blob/21ea81224a2e4f887ee010bd689980bbacb0addb/quorum_intersection.cpp#L204:8
      - https://github.com/stellar/stellar-core/blob/27576172e99d89cbacfe6571f807a5e85746f618/src/herder/QuorumIntersectionCheckerImpl.cpp#L137
     """
-    indegrees = graph.get_indegrees(deps_by_node)
+    induced_subgraph = graph.get_induced_subgraph(deps_by_node, nodes_subset)
+    indegrees = graph.get_indegrees(induced_subgraph)
     return max(indegrees.items(), key=operator.itemgetter(1))[0]
