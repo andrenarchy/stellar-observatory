@@ -1,6 +1,8 @@
 """Lachowski's quorum intersection checker"""
 import logging
+import operator
 
+from .utils import graph
 from .utils import scc
 from .quorum_slices import get_dependencies_by_node
 
@@ -54,9 +56,9 @@ def has_quorum_intersection(nodes, slices_by_node):
     #  iterate over all nodes which are in the largest SCC only (instead of the powerset of all
     #  the nodes) and use this as a search space for disjoint quorums
 
-    return all_min_quorums_intersect(committed, remaining, max_commit_size, max_scc, slices_by_node)
+    return all_min_quorums_intersect(committed, remaining, max_commit_size, max_scc, slices_by_node, deps_by_node)
 
-def all_min_quorums_intersect(committed, remaining, max_commit_size, max_scc, slices_by_node):
+def all_min_quorums_intersect(committed, remaining, max_commit_size, max_scc, slices_by_node, deps_by_node):
     """
     Main recursion that cleverly splits checking if all quorums intersect.
     It only checks necessary recursion branches and exits early where possible.
@@ -88,7 +90,12 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, max_scc, sl
         logging.debug('early exit 2.1: no extension quorum in perimeter={0}'.format(perimeter))
         return True
 
-    return True
+    split_node = next_split_node(remaining, deps_by_node)
+    remaining_without_split = remaining.difference({split_node})
+    return all_min_quorums_intersect(committed, remaining_without_split, max_commit_size, \
+                                     max_scc, slices_by_node, deps_by_node) and \
+        all_min_quorums_intersect(committed.union(split_node), remaining_without_split, max_commit_size, \
+                                     max_scc, slices_by_node, deps_by_node)
 
 def is_quorum(nodes, slices_by_node):
     return contract_to_maximal_quorum(nodes, slices_by_node) != set()
@@ -134,7 +141,7 @@ def contains_quorum_slice(nodes_subset, slices, node):
     contained in the set of given nodes."""
     return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices[node])
 
-def next_split_node(nodes_subset):
+def next_split_node(nodes_subset, deps_by_node):
     """Choose the next split node to process: uniformly at random pick a node with max in-degree.
 
     Note: In Lachowski's paper it is not explicitly stated how to pick the next node.
@@ -142,4 +149,5 @@ def next_split_node(nodes_subset):
      - https://github.com/fixxxedpoint/quorum_intersection/blob/21ea81224a2e4f887ee010bd689980bbacb0addb/quorum_intersection.cpp#L204:8
      - https://github.com/stellar/stellar-core/blob/27576172e99d89cbacfe6571f807a5e85746f618/src/herder/QuorumIntersectionCheckerImpl.cpp#L137
     """
-    # TODO: figure out params and actually pick a node with max in-degree ...
+    indegrees = graph.get_indegrees(deps_by_node)
+    return max(indegrees.items(), key=operator.itemgetter(1))[0]
