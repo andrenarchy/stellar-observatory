@@ -1,7 +1,6 @@
 """Quorum slices and quorums"""
 
 from itertools import chain, combinations, product
-from .quorum_slices import get_dependencies_by_node
 
 def remove_from_qset_definition(qset_definition, node):
     """Return quorum set definition with the given node removed and the threshold reduced by 1"""
