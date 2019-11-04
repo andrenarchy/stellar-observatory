@@ -49,7 +49,7 @@ def test_is_quorum():
     """Test is_quorum()"""
     quorum_slices_by_public_key = {
         'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
-        'B': [{'A', 'B'}],
+        'B': [{'A', 'B'}, {'A', 'D'}],
         'C': [{'A', 'B', 'C', 'D'}]
     }
     assert is_quorum(quorum_slices_by_public_key, {'A', 'B'}) is True
