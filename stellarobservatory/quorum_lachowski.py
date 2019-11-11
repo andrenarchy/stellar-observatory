@@ -26,10 +26,10 @@ def has_quorum_intersection(slices_by_node):
     # make sure only one SCC contains all minimal quorums
     non_intersection_quorums_counter = 0
     for component in sccs:
-        contains_quorum = len(contract_to_maximal_quorum(component, slices_by_node)) != 0
+        contains_slice = len(greatest_quorum(component, slices_by_node)) != 0
         logging.debug("SCC: %s contains a quorum: %s", component,
-                      contract_to_maximal_quorum(component, slices_by_node))
-        if contains_quorum:
+                      greatest_quorum(component, slices_by_node))
+        if contains_slice:
             non_intersection_quorums_counter += 1
 
     if non_intersection_quorums_counter != 1:
@@ -38,7 +38,7 @@ def has_quorum_intersection(slices_by_node):
 
     max_scc = sccs[0]
     logging.debug("max scc: %s", max_scc)
-    max_scc_max_quorum = contract_to_maximal_quorum(max_scc, slices_by_node)
+    max_scc_max_quorum = greatest_quorum(max_scc, slices_by_node)
     if not max_scc_max_quorum:
         logging.debug("No quorum found in transitive closure.")
         return False
@@ -66,7 +66,7 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, fbas_info):
     if len(committed) > max_commit_size:
         return True
 
-    committed_quorum = contract_to_maximal_quorum(committed, slices_by_node)
+    committed_quorum = greatest_quorum(committed, slices_by_node)
     if committed_quorum != set():
         return not (is_minimal_quorum(committed_quorum, slices_by_node) and \
                 has_disjoint_quorum(committed_quorum, max_scc, slices_by_node))
@@ -75,7 +75,7 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, fbas_info):
         return True
 
     perimeter = committed.union(remaining)
-    extension_quorum = contract_to_maximal_quorum(perimeter, slices_by_node)
+    extension_quorum = greatest_quorum(perimeter, slices_by_node)
     if extension_quorum != set():
         if not committed.issubset(extension_quorum):
             return True
@@ -92,23 +92,23 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, fbas_info):
         all_min_quorums_intersect(committed.union({split_node}), remaining_without_split,
                                   max_commit_size, fbas_info)
 
-def is_quorum(nodes, slices_by_node):
-    """Test whether the given nodes are a quorum"""
-    return contract_to_maximal_quorum(nodes, slices_by_node) != set()
+def contracts_to_greatest_quorum(nodes, slices_by_node):
+    """Check whether the given nodes contracts to a quorum."""
+    return greatest_quorum(nodes, slices_by_node) != set()
 
 def has_disjoint_quorum(nodes, max_scc, slices_by_node):
     """Test if there is a quorum disjoint from nodes (with max scc given)"""
-    return is_quorum(max_scc.difference(nodes), slices_by_node)
+    return contracts_to_greatest_quorum(max_scc.difference(nodes), slices_by_node)
 
 def is_minimal_quorum(nodes, slices_by_node):
     """Test if a contracted to maximal quorum is minimal"""
     for node in nodes:
         test_nodes = nodes.difference({node})
-        if contract_to_maximal_quorum(test_nodes, slices_by_node) != set():
+        if greatest_quorum(test_nodes, slices_by_node) != set():
             return False
     return True
 
-def contract_to_maximal_quorum(nodes, slices_by_node):
+def greatest_quorum(nodes, slices_by_node):
     """Contract nodes to a maximal quorum.
 
     Find greatest fixpoint of f(X) = {n ∈ X | containsQuorumSliceForNode(X, n)}.
@@ -122,15 +122,17 @@ def contract_to_maximal_quorum(nodes, slices_by_node):
     while True:
         filtered = set()
         for node in nodes:
-            if contains_quorum_slice(nodes, slices_by_node, node):
+            if contains_slice(nodes, slices_by_node, node):
                 filtered.add(node)
         if filtered in (nodes, {}):
             return filtered
         nodes = filtered
 
-def contains_quorum_slice(nodes_subset, slices, node):
-    """Check if for the given nodes and quorum slices there is a quorum slice
-    contained in the set of given nodes."""
+def contains_slice(nodes_subset, slices, node):
+    """Check if for the given node quorum slices there is a quorum slice
+    contained in the subset of nodes.
+    Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V
+    Output: whether node has a quorum slice contained in nodes_subset"""
     return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices[node])
 
 def next_split_node(nodes_subset, deps_by_node):
