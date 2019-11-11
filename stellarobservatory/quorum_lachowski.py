@@ -168,7 +168,7 @@ def enumerate_quorums(slices_by_node):
         'slices_by_node': slices_by_node
     }
     all_nodes = set(slices_by_node.keys()) # all nodes need to be present as keys here
-    traverse_quorums(fbas_info, set(), all_nodes)
+    return traverse_quorums(fbas_info, set(), all_nodes)
 
 
 def traverse_quorums(fbas_info, committed, remaining):
@@ -178,6 +178,7 @@ def traverse_quorums(fbas_info, committed, remaining):
     if remaining == set():
         if is_quorum(fbas_info['slices_by_node'], committed):
             logging.debug("found quorum: %s", committed)
+            yield frozenset(committed)
     else:
         perimeter = committed.union(remaining)
         greatest_q = greatest_quorum(perimeter, fbas_info['slices_by_node'])
@@ -186,5 +187,5 @@ def traverse_quorums(fbas_info, committed, remaining):
         # v ← pick from R:
         split = next_split_node(remaining, fbas_info['deps_by_node'])
         remaining_without_split = remaining.difference({split})
-        traverse_quorums(fbas_info, committed, remaining_without_split)
-        traverse_quorums(fbas_info, committed.union({split}), remaining_without_split)
+        yield from traverse_quorums(fbas_info, committed, remaining_without_split)
+        yield from traverse_quorums(fbas_info, committed.union({split}), remaining_without_split)
