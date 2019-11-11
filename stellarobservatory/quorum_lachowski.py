@@ -135,22 +135,22 @@ def greatest_quorum(nodes, slices_by_node):
         nodes = filtered
 
 
-def is_quorum(slices, nodes_subset):
+def is_quorum(slices_by_node, nodes_subset):
     """
     Check whether nodes_subset is a quorum in FBAS F (implicitly passed in via slices).
     """
     return all([
-        contains_slice(nodes_subset, slices, v)
+        contains_slice(nodes_subset, slices_by_node, v)
         for v in nodes_subset
     ])
 
 
-def contains_slice(nodes_subset, slices, node):
+def contains_slice(nodes_subset, slices_by_node, node):
     """Check if for the given node quorum slices there is a quorum slice
     contained in the subset of nodes.
     Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V
     Output: whether node has a quorum slice contained in nodes_subset"""
-    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices[node])
+    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices_by_node[node])
 
 
 def next_split_node(nodes_subset, deps_by_node):
