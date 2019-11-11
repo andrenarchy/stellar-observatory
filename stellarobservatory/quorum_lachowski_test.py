@@ -1,8 +1,8 @@
 """Test for Lachowski's quorum intersection function"""
-from .quorum_lachowski import contract_to_maximal_quorum, has_quorum_intersection
+from .quorum_lachowski import greatest_quorum, has_quorum_intersection, is_quorum, enumerate_quorums
 
-def test_contract_to_maximal_quorum():
-    """Test contract_to_maximal_quorum()"""
+def test_greatest_quorum():
+    """Test greatest_quorum()"""
     # pylint: disable=duplicate-code
     quorum_slices_by_public_key = {
         'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
@@ -10,14 +10,15 @@ def test_contract_to_maximal_quorum():
         'C': [{'A', 'B', 'C', 'D'}]
     }
     # Quorum (gets contracted):
-    assert contract_to_maximal_quorum({'A', 'B', 'C'}, quorum_slices_by_public_key) == {'A', 'B'}
+    assert greatest_quorum({'A', 'B', 'C'}, quorum_slices_by_public_key) == {'A', 'B'}
     # Quorum (already maximal):
-    assert contract_to_maximal_quorum({'A', 'B'}, quorum_slices_by_public_key) == {'A', 'B'}
+    assert greatest_quorum({'A', 'B'}, quorum_slices_by_public_key) == {'A', 'B'}
     # No quorum:
-    assert contract_to_maximal_quorum({'B', 'C'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'A'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'B'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'C'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'B', 'C'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'A'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'B'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'C'}, quorum_slices_by_public_key) == set()
+
 
 def test_has_quorum_intersection_false():
     """Test failing has_quorum_intersection()"""
@@ -31,6 +32,7 @@ def test_has_quorum_intersection_false():
 
     assert has_quorum_intersection(quorum_slices_by_node) is False
 
+
 def test_has_quorum_intersection_false_in_scc():
     """Test has_quorum_intersection() without intersection inside an scc"""
     slices_by_node = {
@@ -41,6 +43,7 @@ def test_has_quorum_intersection_false_in_scc():
     }
     assert has_quorum_intersection(slices_by_node) is False
 
+
 def test_has_quorum_intersection_false_two_max_scc():
     """Test has_quorum_intersection() without intersection with two max scc"""
     slices_by_node = {
@@ -49,6 +52,7 @@ def test_has_quorum_intersection_false_two_max_scc():
         3: [{3}]
     }
     assert has_quorum_intersection(slices_by_node) is False
+
 
 def test_has_quorum_intersection_true():
     """Test has_quorum_intersection()"""
@@ -61,6 +65,7 @@ def test_has_quorum_intersection_true():
 
     assert has_quorum_intersection(quorum_slices_by_node) is True
 
+
 def test_has_quorum_intersection_true_sccs():
     """Test has_quorum_intersection() with intersection with three sccs"""
     slices_by_node = {
@@ -71,3 +76,34 @@ def test_has_quorum_intersection_true_sccs():
         5: [{2, 5}]
     }
     assert has_quorum_intersection(slices_by_node) is True
+
+
+def test_is_quorum():
+    """Test is_quorum()"""
+    slices_by_node = {
+        1: [{1, 2}, {1, 3}, {1, 2, 3}],
+        2: [{1, 2}, {1, 4}],
+        3: [{1, 2, 3, 4}]
+    }
+    assert is_quorum(slices_by_node, {1, 2}) is True
+    assert is_quorum(slices_by_node, {1, 2, 3}) is False
+
+
+def test_enumerate_quorums():
+    """Test enumerate_quorums()"""
+    slices_by_node = {
+        1: [{1, 2, 3, 7}],
+        2: [{1, 2, 3, 7}],
+        3: [{1, 2, 3, 7}],
+        4: [{4, 5, 6, 7}],
+        5: [{4, 5, 6, 7}],
+        6: [{4, 5, 6, 7}],
+        7: [{7}],
+    }
+    quorums = list(enumerate_quorums(slices_by_node))
+    assert set(quorums) == set(
+        [frozenset({7}),
+         frozenset({4, 5, 6, 7}),
+         frozenset({1, 2, 3, 7}),
+         frozenset({1, 2, 3, 4, 5, 6, 7})]
+    )

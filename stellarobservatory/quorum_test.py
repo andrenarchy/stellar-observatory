@@ -2,7 +2,7 @@
 import pytest
 from .utils.sets import deepfreezesets
 from .quorum import remove_from_qset_definition, get_normalized_qset_definition, \
-    get_minimal_quorum_intersection, generate_quorum_slices, is_quorum, quorum_intersection
+    get_minimal_quorum_intersection, generate_quorum_slices, quorum_intersection
 
 QSET_DEFINITION = {'threshold': 2, 'validators': ['A', 'B', 'C'], 'innerQuorumSets': []}
 QSET_DEFINITION_WITHOUT_B = {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
@@ -44,16 +44,6 @@ def test_qslice_generation():
     expected_sets_full.add(frozenset(['A', 'B', 'C']))
     result_full = generate_quorum_slices(QSET_DEFINITION, mode='full')
     assert deepfreezesets(result_full) == expected_sets_full
-
-def test_is_quorum():
-    """Test is_quorum()"""
-    quorum_slices_by_public_key = {
-        'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
-        'B': [{'A', 'B'}, {'A', 'D'}],
-        'C': [{'A', 'B', 'C', 'D'}]
-    }
-    assert is_quorum(quorum_slices_by_public_key, {'A', 'B'}) is True
-    assert is_quorum(quorum_slices_by_public_key, {'A', 'B', 'C'}) is False
 
 def test_quorum_intersection():
     """Test quorum_intersection()"""
