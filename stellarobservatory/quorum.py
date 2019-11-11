@@ -60,14 +60,6 @@ def generate_quorum_slices(quorum_set_definition, mode='economic'):
     return [frozenset(chain(*quorum_slice_product))
             for quorum_slice_product in quorum_slice_products]
 
-def is_quorum(quorum_slices_by_public_key, quorum_candidate):
-    """Given quorum slices, determine whether a quorum candidate is a quorum"""
-    return all([
-        any(quorum_slice.issubset(quorum_candidate)
-            for quorum_slice in quorum_slices_by_public_key[public_key])
-        for public_key in quorum_candidate
-    ])
-
 def quorum_intersection(quorums):
     """Returns whether the quorums have intersection, which intersect, and which do not"""
     intersecting_quorums = []
