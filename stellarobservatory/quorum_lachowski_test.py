@@ -79,5 +79,5 @@ def test_is_quorum():
         2: [{1, 2}, {1, 4}],
         3: [{1, 2, 3, 4}]
     }
-    assert is_quorum({1, 2}, slices_by_node,) is True
-    assert is_quorum({1, 2, 3}, slices_by_node) is False
+    assert is_quorum(slices_by_node, {1, 2}) is True
+    assert is_quorum(slices_by_node, {1, 2, 3}) is False
