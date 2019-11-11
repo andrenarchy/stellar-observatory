@@ -1,8 +1,8 @@
 """Test for Lachowski's quorum intersection function"""
-from .quorum_lachowski import contract_to_maximal_quorum, has_quorum_intersection
+from .quorum_lachowski import greatest_quorum, has_quorum_intersection
 
-def test_contract_to_maximal_quorum():
-    """Test contract_to_maximal_quorum()"""
+def test_greatest_quorum():
+    """Test greatest_quorum()"""
     # pylint: disable=duplicate-code
     quorum_slices_by_public_key = {
         'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],
@@ -10,14 +10,14 @@ def test_contract_to_maximal_quorum():
         'C': [{'A', 'B', 'C', 'D'}]
     }
     # Quorum (gets contracted):
-    assert contract_to_maximal_quorum({'A', 'B', 'C'}, quorum_slices_by_public_key) == {'A', 'B'}
+    assert greatest_quorum({'A', 'B', 'C'}, quorum_slices_by_public_key) == {'A', 'B'}
     # Quorum (already maximal):
-    assert contract_to_maximal_quorum({'A', 'B'}, quorum_slices_by_public_key) == {'A', 'B'}
+    assert greatest_quorum({'A', 'B'}, quorum_slices_by_public_key) == {'A', 'B'}
     # No quorum:
-    assert contract_to_maximal_quorum({'B', 'C'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'A'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'B'}, quorum_slices_by_public_key) == set()
-    assert contract_to_maximal_quorum({'C'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'B', 'C'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'A'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'B'}, quorum_slices_by_public_key) == set()
+    assert greatest_quorum({'C'}, quorum_slices_by_public_key) == set()
 
 def test_has_quorum_intersection_false():
     """Test failing has_quorum_intersection()"""
