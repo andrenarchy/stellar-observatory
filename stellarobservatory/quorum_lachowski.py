@@ -167,7 +167,7 @@ def enumerate_quorums(slices_by_node):
         'deps_by_node': deps_by_node,
         'slices_by_node': slices_by_node
     }
-    all_nodes = slices_by_node.keys() # all nodes need to be present as keys here
+    all_nodes = set(slices_by_node.keys()) # all nodes need to be present as keys here
     traverse_quorums(fbas_info, set(), all_nodes)
 
 
@@ -177,7 +177,7 @@ def traverse_quorums(fbas_info, committed, remaining):
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
     if remaining == set():
         if is_quorum(fbas_info['slices_by_node'], committed):
-            print(committed)
+            logging.debug("found quorum: %s", committed)
     else:
         perimeter = committed.union(remaining)
         greatest_q = greatest_quorum(perimeter, fbas_info['slices_by_node'])
