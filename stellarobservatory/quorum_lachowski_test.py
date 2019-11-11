@@ -1,5 +1,5 @@
 """Test for Lachowski's quorum intersection function"""
-from .quorum_lachowski import greatest_quorum, has_quorum_intersection
+from .quorum_lachowski import greatest_quorum, has_quorum_intersection, is_quorum
 
 def test_greatest_quorum():
     """Test greatest_quorum()"""
@@ -71,3 +71,13 @@ def test_has_quorum_intersection_true_sccs():
         5: [{2, 5}]
     }
     assert has_quorum_intersection(slices_by_node) is True
+
+def test_is_quorum():
+    """Test is_quorum()"""
+    slices_by_node = {
+        1: [{1, 2}, {1, 3}, {1, 2, 3}],
+        2: [{1, 2}, {1, 4}],
+        3: [{1, 2, 3, 4}]
+    }
+    assert is_quorum({1, 2}, slices_by_node,) is True
+    assert is_quorum({1, 2, 3}, slices_by_node) is False

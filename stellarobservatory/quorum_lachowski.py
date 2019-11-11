@@ -6,6 +6,7 @@ from .utils import graph
 from .utils import scc
 from .quorum_slices import get_dependencies_by_node
 
+
 def has_quorum_intersection(slices_by_node):
     """Checks if the given FBAS enjoys quorum intersection.
 
@@ -26,10 +27,10 @@ def has_quorum_intersection(slices_by_node):
     # make sure only one SCC contains all minimal quorums
     non_intersection_quorums_counter = 0
     for component in sccs:
-        contains_slice = len(greatest_quorum(component, slices_by_node)) != 0
+        is_greatest_quorum_not_empty = len(greatest_quorum(component, slices_by_node)) != 0
         logging.debug("SCC: %s contains a quorum: %s", component,
                       greatest_quorum(component, slices_by_node))
-        if contains_slice:
+        if is_greatest_quorum_not_empty:
             non_intersection_quorums_counter += 1
 
     if non_intersection_quorums_counter != 1:
@@ -55,6 +56,7 @@ def has_quorum_intersection(slices_by_node):
 
     return all_min_quorums_intersect(committed, remaining, max_commit_size, fbas_info)
 
+
 def all_min_quorums_intersect(committed, remaining, max_commit_size, fbas_info):
     """Test whether all min quorums intersect.
 
@@ -69,7 +71,7 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, fbas_info):
     committed_quorum = greatest_quorum(committed, slices_by_node)
     if committed_quorum != set():
         return not (is_minimal_quorum(committed_quorum, slices_by_node) and \
-                has_disjoint_quorum(committed_quorum, max_scc, slices_by_node))
+                    has_disjoint_quorum(committed_quorum, max_scc, slices_by_node))
 
     if remaining == set():
         return True
@@ -89,16 +91,19 @@ def all_min_quorums_intersect(committed, remaining, max_commit_size, fbas_info):
     remaining_without_split = remaining.difference({split_node})
     return all_min_quorums_intersect(committed, remaining_without_split,
                                      max_commit_size, fbas_info) and \
-        all_min_quorums_intersect(committed.union({split_node}), remaining_without_split,
-                                  max_commit_size, fbas_info)
+           all_min_quorums_intersect(committed.union({split_node}), remaining_without_split,
+                                     max_commit_size, fbas_info)
+
 
 def contracts_to_greatest_quorum(nodes, slices_by_node):
     """Check whether the given nodes contracts to a quorum."""
     return greatest_quorum(nodes, slices_by_node) != set()
 
+
 def has_disjoint_quorum(nodes, max_scc, slices_by_node):
     """Test if there is a quorum disjoint from nodes (with max scc given)"""
     return contracts_to_greatest_quorum(max_scc.difference(nodes), slices_by_node)
+
 
 def is_minimal_quorum(nodes, slices_by_node):
     """Test if a contracted to maximal quorum is minimal"""
@@ -107,6 +112,7 @@ def is_minimal_quorum(nodes, slices_by_node):
         if greatest_quorum(test_nodes, slices_by_node) != set():
             return False
     return True
+
 
 def greatest_quorum(nodes, slices_by_node):
     """Contract nodes to a maximal quorum.
@@ -128,12 +134,24 @@ def greatest_quorum(nodes, slices_by_node):
             return filtered
         nodes = filtered
 
+
+def is_quorum(nodes_subset, slices):
+    """
+    Check whether nodes_subset is a quorum in FBAS F (implicitly passed in via slices).
+    """
+    return all([
+        contains_slice(nodes_subset, slices, v)
+        for v in nodes_subset
+    ])
+
+
 def contains_slice(nodes_subset, slices, node):
     """Check if for the given node quorum slices there is a quorum slice
     contained in the subset of nodes.
     Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V
     Output: whether node has a quorum slice contained in nodes_subset"""
     return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices[node])
+
 
 def next_split_node(nodes_subset, deps_by_node):
     """Choose the next split node to process: uniformly at random pick a node with max in-degree"""
