@@ -7,17 +7,18 @@ from typing import Type
 # Allow for defining an FBAS as a function: (set<T>, T) -> bool.
 # This function returns True, iff the FBAS has a slice for the given node T in the given
 # set.
-FBAS = Callable[[AbstractSet[Type], Type], bool]
+IsSliceContained = Callable[[AbstractSet[Type], Type], bool]
+FBAS = (IsSliceContained, AbstractSet[Type])
 
 
-def enumerate_quorums(is_slice_contained: FBAS, all_nodes):
-    """Enumerate all quorums of FBAS F (given by a function
-    is_slice_contained(set<T>, T) -> bool)."""
+def enumerate_quorums(fbas: FBAS):
+    """Enumerate all quorums of FBAS F (given by the FBAS function(set<T>, T) -> bool)."""
+    (is_slice_contained, all_nodes) = (fbas[0], fbas[1])
     return traverse_quorums(is_slice_contained, set(), all_nodes)
 
 
-def traverse_quorums(is_slice_contained, committed, remaining):
-    """Given a FBAS F (by is_slice_contained) with set of nodes V
+def traverse_quorums(is_slice_contained: IsSliceContained, committed: set, remaining: set):
+    """Given a FBAS F (by fbas) with set of nodes V
     and given the sets: committed ⊆ V; R ⊆ V\\committed,
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
     perimeter = committed.union(remaining)
@@ -40,7 +41,7 @@ def traverse_quorums(is_slice_contained, committed, remaining):
         current = current.difference({node})
 
 
-def greatest_quorum(is_slice_contained, nodes):
+def greatest_quorum(is_slice_contained: IsSliceContained, nodes: set):
     """
     Return greatest quorum contained in nodes or empty set (if there is no such quorum).
     """

@@ -17,7 +17,7 @@ def test_enumerate_quorums():
     def ex28_fbas(nodes_subset, node) -> bool:
         return contains_slice(nodes_subset, slices_by_node, node)
 
-    quorums = list(enumerate_quorums(ex28_fbas, {1, 2, 3, 4, 5, 6, 7}))
+    quorums = list(enumerate_quorums((ex28_fbas, {1, 2, 3, 4, 5, 6, 7})))
     assert set(quorums) == set(
         [frozenset({7}),
          frozenset({4, 5, 6, 7}),
@@ -56,5 +56,5 @@ def test_enumerate_quorums_stellar_core():
                 sufficient_orgs += 1
         return sufficient_orgs >= threshold
 
-    quorums = list(enumerate_quorums(stellar_core, stellar_core_nodes))
+    quorums = list(enumerate_quorums((stellar_core, stellar_core_nodes)))
     assert len(quorums) == 114688
