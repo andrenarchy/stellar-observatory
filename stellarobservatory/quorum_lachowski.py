@@ -158,34 +158,3 @@ def next_split_node(nodes_subset, deps_by_node):
     induced_subgraph = graph.get_induced_subgraph(deps_by_node, nodes_subset)
     indegrees = graph.get_indegrees(induced_subgraph)
     return max(indegrees.items(), key=operator.itemgetter(1))[0]
-
-
-def enumerate_quorums(slices_by_node):
-    """Enumerate all quorums of FBAS F (given by slices_by_node)."""
-    deps_by_node = get_dependencies_by_node(slices_by_node)
-    fbas_info = {
-        'deps_by_node': deps_by_node,
-        'slices_by_node': slices_by_node
-    }
-    all_nodes = set(slices_by_node.keys()) # all nodes need to be present as keys here
-    return traverse_quorums(fbas_info, set(), all_nodes)
-
-
-def traverse_quorums(fbas_info, committed, remaining):
-    """Given a FBAS F (by fbas_info) with set of nodes V
-    and given the sets: committed ⊆ V; R ⊆ V\\committed,
-    enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
-    if remaining == set():
-        if is_quorum(fbas_info['slices_by_node'], committed):
-            logging.debug("found quorum: %s", committed)
-            yield frozenset(committed)
-    else:
-        perimeter = committed.union(remaining)
-        greatest_q = greatest_quorum(perimeter, fbas_info['slices_by_node'])
-        if greatest_q == set() or not committed.issubset(greatest_q):
-            return
-        # v ← pick from R:
-        split = next_split_node(remaining, fbas_info['deps_by_node'])
-        remaining_without_split = remaining.difference({split})
-        yield from traverse_quorums(fbas_info, committed, remaining_without_split)
-        yield from traverse_quorums(fbas_info, committed.union({split}), remaining_without_split)

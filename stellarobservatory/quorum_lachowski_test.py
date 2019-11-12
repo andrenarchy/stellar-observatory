@@ -1,5 +1,5 @@
 """Test for Lachowski's quorum intersection function"""
-from .quorum_lachowski import greatest_quorum, has_quorum_intersection, is_quorum, enumerate_quorums
+from .quorum_lachowski import greatest_quorum, has_quorum_intersection, is_quorum
 
 def test_greatest_quorum():
     """Test greatest_quorum()"""
@@ -87,23 +87,3 @@ def test_is_quorum():
     }
     assert is_quorum(slices_by_node, {1, 2}) is True
     assert is_quorum(slices_by_node, {1, 2, 3}) is False
-
-
-def test_enumerate_quorums():
-    """Test enumerate_quorums()"""
-    slices_by_node = {
-        1: [{1, 2, 3, 7}],
-        2: [{1, 2, 3, 7}],
-        3: [{1, 2, 3, 7}],
-        4: [{4, 5, 6, 7}],
-        5: [{4, 5, 6, 7}],
-        6: [{4, 5, 6, 7}],
-        7: [{7}],
-    }
-    quorums = list(enumerate_quorums(slices_by_node))
-    assert set(quorums) == set(
-        [frozenset({7}),
-         frozenset({4, 5, 6, 7}),
-         frozenset({1, 2, 3, 7}),
-         frozenset({1, 2, 3, 4, 5, 6, 7})]
-    )
