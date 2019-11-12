@@ -13,7 +13,7 @@ FBAS = (IsSliceContained, AbstractSet[Type])
 
 def enumerate_quorums(fbas: FBAS):
     """Enumerate all quorums of FBAS F (given by the FBAS function(set<T>, T) -> bool)."""
-    (is_slice_contained, all_nodes) = (fbas[0], fbas[1])
+    (is_slice_contained, all_nodes) = fbas
     return traverse_quorums(is_slice_contained, set(), all_nodes)
 
 
