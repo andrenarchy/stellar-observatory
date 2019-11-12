@@ -1,6 +1,5 @@
 """Torstens's quorum enumeration"""
 
-
 from typing import Callable
 from typing import AbstractSet
 from typing import Type
@@ -10,17 +9,19 @@ from typing import Type
 # set.
 FBAS = Callable[[AbstractSet[Type], Type], bool]
 
-def enumerate_quorums(fbas: FBAS, all_nodes):
-    """Enumerate all quorums of FBAS F (given by the FBAS function(set<T>, T) -> bool)."""
-    return traverse_quorums(fbas, set(), all_nodes)
+
+def enumerate_quorums(is_slice_contained: FBAS, all_nodes):
+    """Enumerate all quorums of FBAS F (given by a function
+    is_slice_contained(set<T>, T) -> bool)."""
+    return traverse_quorums(is_slice_contained, set(), all_nodes)
 
 
-def traverse_quorums(fbas, committed, remaining):
-    """Given a FBAS F (by fbas_info) with set of nodes V
+def traverse_quorums(is_slice_contained, committed, remaining):
+    """Given a FBAS F (by is_slice_contained) with set of nodes V
     and given the sets: committed ⊆ V; R ⊆ V\\committed,
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
     perimeter = committed.union(remaining)
-    greatest_q = greatest_quorum(fbas, perimeter)
+    greatest_q = greatest_quorum(is_slice_contained, perimeter)
     if greatest_q == set() or not committed.issubset(greatest_q):
         return
     yield frozenset(greatest_q)
@@ -33,20 +34,20 @@ def traverse_quorums(fbas, committed, remaining):
         # but this can't happen as current != set())
         # pylint: disable=R1708
         node = next(iter(current))
-        yield from traverse_quorums(fbas,
+        yield from traverse_quorums(is_slice_contained,
                                     greatest_q.difference(current),
                                     current.difference({node}))
         current = current.difference({node})
 
 
-def greatest_quorum(fbas, nodes):
+def greatest_quorum(is_slice_contained, nodes):
     """
     Return greatest quorum contained in nodes or empty set (if there is no such quorum).
     """
     while True:
         next_u = set()
         for node in nodes:
-            if fbas(nodes, node):
+            if is_slice_contained(nodes, node):
                 next_u.add(node)
         if len(nodes) == len(next_u):
             return next_u

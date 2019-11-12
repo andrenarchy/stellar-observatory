@@ -42,6 +42,7 @@ def test_enumerate_quorums_stellar_core():
         for node in nodes:
             stellar_core_nodes.add(name + node)
 
+    threshold = 5
     def stellar_core(subset: set, _: str) -> bool:
         sufficient_orgs = 0
         for org in stellar_core_orgs:
@@ -53,9 +54,7 @@ def test_enumerate_quorums_stellar_core():
                     sufficient_nodes += 1
             if sufficient_nodes >= limit:
                 sufficient_orgs += 1
-        return sufficient_orgs >= 5
+        return sufficient_orgs >= threshold
 
-
-    #logging.debug("all nodes len: %s", stellar_core_nodes)
     quorums = list(enumerate_quorums(stellar_core, stellar_core_nodes))
     assert len(quorums) == 114688
