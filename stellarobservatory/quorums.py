@@ -22,8 +22,8 @@ def traverse_quorums(is_slice_contained: IsSliceContained, committed: set, remai
     and given the sets: committed ⊆ V; R ⊆ V\\committed,
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
     perimeter = committed.union(remaining)
-    greatest_q = greatest_quorum(is_slice_contained, perimeter)
-    if greatest_q == set() or not committed.issubset(greatest_q):
+    greatest_q = greatest_quorum(is_slice_contained, perimeter, comitted)
+    if greatest_q == set():
         return
     yield frozenset(greatest_q)
 
@@ -41,15 +41,19 @@ def traverse_quorums(is_slice_contained: IsSliceContained, committed: set, remai
         current = current.difference({node})
 
 
-def greatest_quorum(is_slice_contained: IsSliceContained, nodes: set):
+def greatest_quorum(is_slice_contained: IsSliceContained, nodes: set, lower_bound: set):
     """
-    Return greatest quorum contained in nodes or empty set (if there is no such quorum).
+    Return greatest quorum contained in nodes if it is a super set of lower_bound
+    or empty set (if there is no such quorum).
     """
     while True:
         next_u = set()
         for node in nodes:
             if is_slice_contained(nodes, node):
                 next_u.add(node)
+            else:
+                if node in lower_bound:
+                    return set()
         if len(nodes) == len(next_u):
             return next_u
         nodes = next_u
