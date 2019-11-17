@@ -22,7 +22,7 @@ def traverse_quorums(is_slice_contained: IsSliceContained, committed: set, remai
     and given the sets: committed ⊆ V; R ⊆ V\\committed,
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
     perimeter = committed.union(remaining)
-    greatest_q = greatest_quorum(is_slice_contained, perimeter, comitted)
+    greatest_q = greatest_quorum(is_slice_contained, perimeter, committed)
     if greatest_q == set():
         return
     yield frozenset(greatest_q)
