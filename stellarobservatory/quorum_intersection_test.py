@@ -1,4 +1,4 @@
-import logging
+"""Test for Torstens's quorum intersection checker (Lachowski variant)"""
 
 from stellarobservatory.quorum_lachowski import contains_slice
 

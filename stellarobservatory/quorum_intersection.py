@@ -1,9 +1,12 @@
+"""Torstens's quorum intersection checker (a Lachowski variant)"""
 import logging
 from typing import Callable, Set, Type, Tuple
 
 from stellarobservatory.quorums import greatest_quorum
 
 def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]]):
+    """Takes an FBAS with set of nodes V and returns True iff F has quorum intersection.
+    It prints two disjoint quorums otherwise."""
     (is_slice_contained, all_nodes) = fbas
     for quorum in traverse_min_quorums(is_slice_contained, set(), all_nodes):
         greatest_q = greatest_quorum(is_slice_contained, all_nodes.difference(quorum), set())
@@ -38,8 +41,8 @@ def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
         perimeter = committed.union(remaining)
         # TODO figure out if set() is the best "lower bound" here for greatest_quorum
         if remaining != set() and committed.issubset(greatest_quorum(is_slice_contained,
-                                                                         perimeter,
-                                                                         set())):
+                                                                     perimeter,
+                                                                     set())):
             # v ← pick from R:
             # (note pylint complains:
             # Do not raise StopIteration in generator, use return statement instead
