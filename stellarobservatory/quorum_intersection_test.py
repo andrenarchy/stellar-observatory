@@ -17,5 +17,5 @@ def test_has_quorum_intersection_false():
 
     def is_slice_contained(nodes_subset, node) -> bool:
         return contains_slice(nodes_subset, slices_by_node, node)
-    # TODO assert
-    quorum_intersection((is_slice_contained, {'A', 'B', 'C', 'D'}))
+
+    assert quorum_intersection((is_slice_contained, {'A', 'B', 'C', 'D'})) is False
