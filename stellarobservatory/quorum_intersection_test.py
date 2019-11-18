@@ -6,7 +6,7 @@ from stellarobservatory.quorum_intersection import quorum_intersection
 
 
 def test_has_quorum_intersection_false():
-    """Test failing has_quorum_intersection()"""
+    """Test quorum_intersection() == False"""
     # Basically two disjoint quorums {A, B} and {D} (two SCCs)
     slices_by_node = {
         'A': [{'A', 'B'}, {'A', 'C'}, {'A', 'B', 'C'}],

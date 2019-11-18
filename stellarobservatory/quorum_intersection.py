@@ -4,6 +4,7 @@ from typing import Callable, Set, Type, Tuple
 
 from stellarobservatory.quorums import greatest_quorum
 
+
 def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]]):
     """Takes an FBAS with set of nodes V and returns True iff F has quorum intersection.
     It prints two disjoint quorums otherwise."""
@@ -14,6 +15,7 @@ def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]
             logging.info("Found two disjoint quorums: %s, %s", quorum, greatest_q)
             return False
     return True
+
 
 def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
                                subset_nodes: set):
@@ -26,10 +28,10 @@ def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type], b
 
 
 def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
-                         committed: set,   # U
+                         committed: set,  # U
                          remaining: set):  # R
     """Enumerate all min quorums Q with U ⊆ Q ⊆ U∪R and |Q|≤|V|/2"""
-    if len(committed) > len(remaining)/2:
+    if len(committed) > len(remaining) / 2:
         return
     # TODO figure out if set() is the best "lower bound" here for greatest_quorum
     greatest_q = greatest_quorum(is_slice_contained, committed, set())
