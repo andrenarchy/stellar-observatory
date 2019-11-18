@@ -2,6 +2,7 @@
 from .quorums import enumerate_quorums
 from .quorum_lachowski import contains_slice
 
+
 def test_enumerate_quorums():
     """Test enumerate_quorums() with simple example"""
     slices_by_node = {
@@ -18,12 +19,12 @@ def test_enumerate_quorums():
         return contains_slice(nodes_subset, slices_by_node, node)
 
     quorums = list(enumerate_quorums((ex28_fbas, {1, 2, 3, 4, 5, 6, 7})))
-    assert set(quorums) == set(
-        [frozenset({7}),
-         frozenset({4, 5, 6, 7}),
-         frozenset({1, 2, 3, 7}),
-         frozenset({1, 2, 3, 4, 5, 6, 7})]
-    )
+    assert set(quorums) == {frozenset({7}),
+                            frozenset({4, 5, 6, 7}),
+                            frozenset({1, 2, 3, 7}),
+                            frozenset({1, 2, 3, 4, 5, 6, 7})
+                            }
+
 
 def test_enumerate_quorums_stellar_core():
     """Test enumerate_quorums() with stellar core style fbas"""
@@ -43,6 +44,7 @@ def test_enumerate_quorums_stellar_core():
             stellar_core_nodes.add(name + node)
 
     threshold = 5
+
     def stellar_core(subset: set, _: str) -> bool:
         sufficient_orgs = 0
         for org in stellar_core_orgs:

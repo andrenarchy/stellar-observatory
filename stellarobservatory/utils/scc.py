@@ -3,6 +3,7 @@ import numpy
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
 
+
 def get_strongly_connected_components(graph):
     """
     Get strongly connected components for a directed graph
