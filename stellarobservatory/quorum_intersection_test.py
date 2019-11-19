@@ -15,7 +15,7 @@ def test_has_quorum_intersection_false():
     }
 
     def is_slice_contained(nodes_subset, node) -> bool:
-        return contains_slice(nodes_subset, slices_by_node, node)
+        return contains_slice(nodes_subset, slices_by_node, node, set())
 
     assert quorum_intersection((is_slice_contained, {'A', 'B', 'C', 'D'})) is False
 
@@ -31,7 +31,7 @@ def test_has_quorum_intersection_false_in_scc():
     }
 
     def is_slice_contained(nodes_subset, node) -> bool:
-        return contains_slice(nodes_subset, slices_by_node, node)
+        return contains_slice(nodes_subset, slices_by_node, node, set())
 
     assert quorum_intersection((is_slice_contained, {1, 2, 3, 4})) is False
 
@@ -46,7 +46,7 @@ def test_has_quorum_intersection_false_two_max_scc():
     }
 
     def is_slice_contained(nodes_subset, node) -> bool:
-        return contains_slice(nodes_subset, slices_by_node, node)
+        return contains_slice(nodes_subset, slices_by_node, node, set())
 
     assert quorum_intersection((is_slice_contained, {1, 2, 3})) is False
 
@@ -61,7 +61,7 @@ def test_has_quorum_intersection_true():
     }
 
     def is_slice_contained(nodes_subset, node) -> bool:
-        return contains_slice(nodes_subset, quorum_slices_by_node, node)
+        return contains_slice(nodes_subset, quorum_slices_by_node, node, set())
 
     assert quorum_intersection((is_slice_contained, {'A', 'B', 'C'})) is True
 
@@ -76,7 +76,7 @@ def test_has_quorum_intersection_true_sccs():
         5: [{2, 5}]
     }
 
-    def is_slice_contained(nodes_subset, node) -> bool:
-        return contains_slice(nodes_subset, slices_by_node, node)
+    def is_slice_contained(nodes_subset, node, without) -> bool:
+        return contains_slice(nodes_subset, slices_by_node, node, set())
 
     assert quorum_intersection((is_slice_contained, {1, 2, 3, 4, 5})) is True

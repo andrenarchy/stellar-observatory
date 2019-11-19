@@ -15,7 +15,7 @@ def test_enumerate_quorums():
     }
 
     def ex28_fbas(nodes_subset, node) -> bool:
-        return contains_slice(nodes_subset, slices_by_node, node)
+        return contains_slice(nodes_subset, slices_by_node, node, set())
 
     quorums = list(enumerate_quorums((ex28_fbas, {1, 2, 3, 4, 5, 6, 7})))
     assert set(quorums) == {frozenset({7}),
