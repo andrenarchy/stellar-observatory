@@ -4,7 +4,8 @@ from typing import Callable, Set, Type, Tuple
 from stellarobservatory.quorums import greatest_quorum
 
 
-def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool], Set[Type]], without_d: set):
+def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool], Set[Type]],
+                        without_d: set):
     """Takes an FBAS with set of nodes V and returns True iff F has quorum intersection.
     It prints two disjoint quorums otherwise."""
     is_slice_contained, all_nodes = fbas

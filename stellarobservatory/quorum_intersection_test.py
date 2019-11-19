@@ -19,7 +19,7 @@ def test_has_quorum_intersection_false():
 
     has_intersection, quorum1, quorum2 = quorum_intersection((is_slice_contained,
                                                               {'A', 'B', 'C', 'D'}),
-                                                              set())
+                                                             set())
     assert has_intersection is False
     assert is_quorum(is_slice_contained, quorum1) is True
     assert is_quorum(is_slice_contained, quorum2) is True
@@ -39,7 +39,9 @@ def test_has_quorum_intersection_false_in_scc():
     def is_slice_contained(nodes_subset, node, without_d) -> bool:
         return contains_slice(nodes_subset, slices_by_node, node, without_d)
 
-    has_intersection, quorum1, quorum2 = quorum_intersection((is_slice_contained, {1, 2, 3, 4}), set())
+    has_intersection, quorum1, quorum2 = quorum_intersection((is_slice_contained,
+                                                              {1, 2, 3, 4}),
+                                                             set())
     assert has_intersection is False
     assert is_quorum(is_slice_contained, quorum1) is True
     assert is_quorum(is_slice_contained, quorum2) is True

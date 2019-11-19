@@ -44,7 +44,7 @@ def test_enumerate_quorums_stellar_core():
 
     threshold = 5
 
-    def stellar_core(subset: set, _: str, without_d: set) -> bool:
+    def stellar_core(subset: set, _: str, _without_d: set) -> bool:
         sufficient_orgs = 0
         for org in stellar_core_orgs:
             name, nodes, limit = org['name'], org['nodes'], org['limit']
