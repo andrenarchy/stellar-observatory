@@ -1,23 +1,21 @@
 """Torstens's quorum enumeration"""
 
-from typing import Callable
-from typing import AbstractSet
+from typing import Callable, Tuple, Set
 from typing import Type
+
 
 # Allow for defining an FBAS as a function: (set<T>, T) -> bool.
 # This function returns True, iff the FBAS has a slice for the given node T in the given
 # set.
-IsSliceContained = Callable[[AbstractSet[Type], Type], bool]
-FBAS = (IsSliceContained, AbstractSet[Type])
-
-
-def enumerate_quorums(fbas: FBAS):
+def enumerate_quorums(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]]):
     """Enumerate all quorums of FBAS F (given by the pair (function(set<T>, T) -> bool, set))."""
     (is_slice_contained, all_nodes) = fbas
     return traverse_quorums(is_slice_contained, set(), all_nodes)
 
 
-def traverse_quorums(is_slice_contained: IsSliceContained, committed: set, remaining: set):
+def traverse_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
+                     committed: set,
+                     remaining: set):
     """Given a FBAS F (by is_slice_contained) with set of nodes V
     and given the sets: committed ⊆ V; R ⊆ V\\committed,
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
@@ -41,7 +39,9 @@ def traverse_quorums(is_slice_contained: IsSliceContained, committed: set, remai
         current = current.difference({node})
 
 
-def greatest_quorum(is_slice_contained: IsSliceContained, nodes: set, lower_bound: set):
+def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
+                    nodes: set,
+                    lower_bound: set):
     """
     Return greatest quorum contained in nodes if it is a super set of lower_bound
     or empty set (if there is no such quorum).
@@ -57,3 +57,10 @@ def greatest_quorum(is_slice_contained: IsSliceContained, nodes: set, lower_boun
         if len(nodes) == len(next_u):
             return next_u
         nodes = next_u
+
+def contains_slice(nodes_subset, slices_by_node, node):
+    """Check if for the given node quorum slices there is a quorum slice
+    contained in the subset of nodes.
+    Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V
+    Output: whether node has a quorum slice contained in nodes_subset"""
+    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices_by_node[node])

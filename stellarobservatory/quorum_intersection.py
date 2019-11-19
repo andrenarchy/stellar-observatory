@@ -1,0 +1,60 @@
+"""Torstens's quorum intersection checker (a Lachowski variant)"""
+from typing import Callable, Set, Type, Tuple
+
+from stellarobservatory.quorums import greatest_quorum
+
+
+def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]]):
+    """Takes an FBAS with set of nodes V and returns True iff F has quorum intersection.
+    It prints two disjoint quorums otherwise."""
+    is_slice_contained, all_nodes = fbas
+    len_all_nodes = len(all_nodes)
+    for quorum in traverse_min_quorums(is_slice_contained, set(), all_nodes, len_all_nodes):
+        greatest_q = greatest_quorum(is_slice_contained, all_nodes.difference(quorum), set())
+        if greatest_q != set():
+            return False, quorum, greatest_q
+    return True
+
+
+def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
+                               subset_nodes: set):
+    """Takes an FBAS with set of nodes V; and a subset U of V and
+    returns whether there is a quorum Q not fully contained U"""
+    for node in subset_nodes:
+        if greatest_quorum(is_slice_contained, subset_nodes.difference({node}), set()) != set():
+            return True
+    return False
+
+
+def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
+                         committed: set,  # U
+                         remaining: set,  # R
+                         len_all_nodes: int):  # |V|
+    """Enumerate all min quorums Q with U ⊆ Q ⊆ U∪R and |Q|≤|V|/2"""
+    if len(committed) > len_all_nodes / 2:  # if |U|>|V|/2 return
+        return
+    greatest_q = greatest_quorum(is_slice_contained, committed, set())
+    if greatest_q != set():
+        if committed == greatest_q and not contains_proper_sub_quorum(is_slice_contained,
+                                                                      committed):
+            yield committed
+    else:
+        perimeter = committed.union(remaining)
+        if remaining != set() and committed.issubset(greatest_quorum(is_slice_contained,
+                                                                     perimeter,
+                                                                     remaining)):
+            # v ← pick from R:
+            # (note pylint complains:
+            # Do not raise StopIteration in generator, use return statement instead
+            # but this can't happen as current != set())
+            # pylint: disable=R1708
+            node = next(iter(remaining))
+            remaining_without_v = remaining.difference({node})
+            yield from traverse_min_quorums(is_slice_contained,
+                                            committed,
+                                            remaining_without_v,
+                                            len_all_nodes)
+            yield from traverse_min_quorums(is_slice_contained,
+                                            committed.union({node}),
+                                            remaining_without_v,
+                                            len_all_nodes)
