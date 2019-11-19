@@ -20,7 +20,7 @@ def traverse_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
     and given the sets: committed ⊆ V; R ⊆ V\\committed,
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
     perimeter = committed.union(remaining)
-    greatest_q = greatest_quorum(is_slice_contained, perimeter, committed)
+    greatest_q = greatest_quorum(is_slice_contained, perimeter, committed, set())
     if greatest_q == set():
         return
     yield frozenset(greatest_q)
@@ -39,9 +39,10 @@ def traverse_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
         current = current.difference({node})
 
 
-def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
+def greatest_quorum(is_slice_contained: Callable[[Set[Type], Set[Type], Type], bool],
                     nodes: set,
-                    lower_bound: set):
+                    lower_bound: set,
+                    without_d: set):
     """
     Return greatest quorum contained in nodes if it is a super set of lower_bound
     or empty set (if there is no such quorum).
@@ -49,7 +50,7 @@ def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
     while True:
         next_u = set()
         for node in nodes:
-            if is_slice_contained(nodes, node):
+            if is_slice_contained(nodes, node, without_d):
                 next_u.add(node)
             else:
                 if node in lower_bound:
@@ -65,7 +66,8 @@ def contains_slice(nodes_subset, slices_by_node, node, without_d):
     Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V, a set D ⊆ V
     Output: whether node has a quorum slice in the FBAS (without D) contained in nodes_subset"""
     if without_d == set():  # minor optimization to not recompute difference in loop:
-        return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices_by_node[node])
-    else:
-        return any(quorum_slice.difference(without_d).issubset(nodes_subset) for quorum_slice in slices_by_node[node])
+        return any(quorum_slice.issubset(nodes_subset)
+                   for quorum_slice in slices_by_node[node])
 
+    return any(quorum_slice.difference(without_d).issubset(nodes_subset)
+               for quorum_slice in slices_by_node[node])
