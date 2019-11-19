@@ -35,7 +35,6 @@ def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
     """Enumerate all min quorums Q with U ⊆ Q ⊆ U∪R and |Q|≤|V|/2"""
     if len(committed) > len_all_nodes / 2:  # if |U|>|V|/2 return
         return
-    # TODO figure out if set() is the best "lower bound" here for greatest_quorum
     greatest_q = greatest_quorum(is_slice_contained, committed, set())
     if greatest_q != set():
         if committed == greatest_q and not contains_proper_sub_quorum(is_slice_contained,

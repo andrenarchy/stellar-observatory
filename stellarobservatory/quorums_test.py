@@ -1,6 +1,5 @@
 """Test for Torstens's quorum enumeration"""
-from .quorums import enumerate_quorums
-from .quorum_lachowski import contains_slice
+from .quorums import enumerate_quorums, contains_slice
 
 
 def test_enumerate_quorums():

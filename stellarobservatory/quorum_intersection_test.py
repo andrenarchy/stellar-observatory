@@ -1,8 +1,7 @@
 """Test for Torstens's quorum intersection checker (Lachowski variant)"""
 
-from stellarobservatory.quorum_lachowski import contains_slice
-
 from stellarobservatory.quorum_intersection import quorum_intersection
+from stellarobservatory.quorums import contains_slice
 
 
 def test_has_quorum_intersection_false():
@@ -36,6 +35,7 @@ def test_has_quorum_intersection_false_in_scc():
 
     assert quorum_intersection((is_slice_contained, {1, 2, 3, 4})) is False
 
+
 def test_has_quorum_intersection_false_two_max_scc():
     """Test has_quorum_intersection() without intersection with two max scc:
     Disjoint SCCs:  {2}, {3}"""
@@ -50,6 +50,7 @@ def test_has_quorum_intersection_false_two_max_scc():
 
     assert quorum_intersection((is_slice_contained, {1, 2, 3})) is False
 
+
 def test_has_quorum_intersection_true():
     """Test has_quorum_intersection()"""
     # One SCC containing quorum {A, B}
@@ -61,7 +62,6 @@ def test_has_quorum_intersection_true():
 
     def is_slice_contained(nodes_subset, node) -> bool:
         return contains_slice(nodes_subset, quorum_slices_by_node, node)
-
 
     assert quorum_intersection((is_slice_contained, {'A', 'B', 'C'})) is True
 
@@ -75,6 +75,7 @@ def test_has_quorum_intersection_true_sccs():
         4: [{1, 4}],
         5: [{2, 5}]
     }
+
     def is_slice_contained(nodes_subset, node) -> bool:
         return contains_slice(nodes_subset, slices_by_node, node)
 

@@ -57,3 +57,10 @@ def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
         if len(nodes) == len(next_u):
             return next_u
         nodes = next_u
+
+def contains_slice(nodes_subset, slices_by_node, node):
+    """Check if for the given node quorum slices there is a quorum slice
+    contained in the subset of nodes.
+    Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V
+    Output: whether node has a quorum slice contained in nodes_subset"""
+    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices_by_node[node])
