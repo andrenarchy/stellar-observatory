@@ -58,3 +58,13 @@ def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
                                             committed.union({node}),
                                             remaining_without_v,
                                             len_all_nodes)
+
+
+def is_quorum(is_slice_contained: Callable[[Set[Type], Type], bool], nodes_subset: set):
+    """
+    Check whether nodes_subset is a quorum in FBAS F (implicitly is_slice_contained method).
+    """
+    return all([
+        is_slice_contained(nodes_subset, v)
+        for v in nodes_subset
+    ])
