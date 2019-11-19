@@ -1,5 +1,4 @@
 """Torstens's quorum intersection checker (a Lachowski variant)"""
-import logging
 from typing import Callable, Set, Type, Tuple
 
 from stellarobservatory.quorums import greatest_quorum
@@ -14,8 +13,7 @@ def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool]
         greatest_q = greatest_quorum(is_slice_contained,
                                      all_nodes.difference(quorum), set(), without_d)
         if greatest_q != set():
-            logging.info("Found two disjoint quorums: %s, %s", quorum, greatest_q)
-            return False
+            return False, quorum, greatest_q
     return True
 
 
@@ -63,3 +61,13 @@ def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
                                             committed.union({node}),
                                             remaining_without_v,
                                             len_all_nodes)
+
+
+def is_quorum(is_slice_contained: Callable[[Set[Type], Type], bool], nodes_subset: set):
+    """
+    Check whether nodes_subset is a quorum in FBAS F (implicitly is_slice_contained method).
+    """
+    return all([
+        is_slice_contained(nodes_subset, v)
+        for v in nodes_subset
+    ])
