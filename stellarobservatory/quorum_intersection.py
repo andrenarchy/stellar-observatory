@@ -8,8 +8,9 @@ from stellarobservatory.quorums import greatest_quorum
 def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]]):
     """Takes an FBAS with set of nodes V and returns True iff F has quorum intersection.
     It prints two disjoint quorums otherwise."""
-    (is_slice_contained, all_nodes) = fbas
-    for quorum in traverse_min_quorums(fbas, set(), all_nodes):
+    is_slice_contained, all_nodes = fbas
+    len_all_nodes = len(all_nodes)
+    for quorum in traverse_min_quorums(is_slice_contained, set(), all_nodes, len_all_nodes):
         greatest_q = greatest_quorum(is_slice_contained, all_nodes.difference(quorum), set())
         if greatest_q != set():
             logging.info("Found two disjoint quorums: %s, %s", quorum, greatest_q)
@@ -17,25 +18,22 @@ def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]
     return True
 
 
-def contains_proper_sub_quorum(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]],
+def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
                                subset_nodes: set):
     """Takes an FBAS with set of nodes V; and a subset U of V and
     returns whether there is a quorum Q not fully contained U"""
-    (is_slice_contained, _) = fbas
     for node in subset_nodes:
         if greatest_quorum(is_slice_contained, subset_nodes.difference({node}), set()) != set():
             return True
     return False
 
 
-def traverse_min_quorums(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]],
+def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
                          committed: set,  # U
-                         remaining: set):  # R
+                         remaining: set,  # R
+                         len_all_nodes: int):  # |V|
     """Enumerate all min quorums Q with U ⊆ Q ⊆ U∪R and |Q|≤|V|/2"""
-    # TODO shouldn't this be len(remaining) / 2 + 1? The paper says U|>|V|/2
-    (is_slice_contained, all_nodes) = fbas
-    if len(committed) > len(all_nodes) / 2:
-        logging.debug("len(committed) > len(all_nodes) / 2: %s; with committed: %s, remaining: %s, all: %s,  len(all_nodes) / 2 =%s", len(committed) > len(all_nodes) / 2, committed, remaining, all_nodes,  len(all_nodes) / 2)
+    if len(committed) > len_all_nodes / 2:  # if |U|>|V|/2 return
         return
     # TODO figure out if set() is the best "lower bound" here for greatest_quorum
     greatest_q = greatest_quorum(is_slice_contained, committed, set())
@@ -45,10 +43,9 @@ def traverse_min_quorums(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type
             yield committed
     else:
         perimeter = committed.union(remaining)
-        # TODO figure out if set() is the best "lower bound" here for greatest_quorum
         if remaining != set() and committed.issubset(greatest_quorum(is_slice_contained,
                                                                      perimeter,
-                                                                     set())):
+                                                                     remaining)):
             # v ← pick from R:
             # (note pylint complains:
             # Do not raise StopIteration in generator, use return statement instead
@@ -56,9 +53,11 @@ def traverse_min_quorums(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type
             # pylint: disable=R1708
             node = next(iter(remaining))
             remaining_without_v = remaining.difference({node})
-            yield from traverse_min_quorums(fbas,
+            yield from traverse_min_quorums(is_slice_contained,
                                             committed,
-                                            remaining_without_v)
-            yield from traverse_min_quorums(fbas,
+                                            remaining_without_v,
+                                            len_all_nodes)
+            yield from traverse_min_quorums(is_slice_contained,
                                             committed.union({node}),
-                                            remaining_without_v)
+                                            remaining_without_v,
+                                            len_all_nodes)
