@@ -69,6 +69,6 @@ def is_quorum(is_slice_contained: Callable[[Set[Type], Type], bool], nodes_subse
     Check whether nodes_subset is a quorum in FBAS F (implicitly is_slice_contained method).
     """
     return all([
-        is_slice_contained(nodes_subset, v)
+        is_slice_contained(nodes_subset, v, set())
         for v in nodes_subset
     ])
