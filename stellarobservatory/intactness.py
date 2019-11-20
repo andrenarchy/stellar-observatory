@@ -1,5 +1,4 @@
 """Algorithm for determining B-intact nodes given a set B of nodes."""
-
 from typing import Tuple, Callable, Set, Type
 
 from stellarobservatory.quorum_intersection import quorum_intersection
@@ -16,7 +15,9 @@ def intact_nodes(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool], Set[T
     current = all_nodes.difference(b_nodes)
     while True:
         greatest_q = greatest_quorum(is_slice_contained, current, set(), set())
-        result = quorum_intersection(fbas, greatest_q)
+        cur_fbas = (is_slice_contained, all_nodes.difference(greatest_q))
+        # determine whether F^{V\Q} has quorum intersection:
+        result = quorum_intersection(cur_fbas, greatest_q)
         if result is True:
             return greatest_q
         # else:
