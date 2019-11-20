@@ -18,7 +18,7 @@ def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool]
     return True
 
 
-def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
+def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], bool],
                                subset_nodes: set):
     """Takes an FBAS with set of nodes V; and a subset U of V and
     returns whether there is a quorum Q not fully contained U"""
@@ -29,7 +29,7 @@ def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type], b
     return False
 
 
-def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
+def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], bool],
                          committed: set,  # U
                          remaining: set,  # R
                          len_all_nodes: int):  # |V|
@@ -64,7 +64,7 @@ def traverse_min_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
                                             len_all_nodes)
 
 
-def is_quorum(is_slice_contained: Callable[[Set[Type], Type], bool], nodes_subset: set):
+def is_quorum(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], bool], nodes_subset: set):
     """
     Check whether nodes_subset is a quorum in FBAS F (implicitly is_slice_contained method).
     """
