@@ -5,7 +5,7 @@ from stellarobservatory.quorum_intersection import quorum_intersection
 from stellarobservatory.quorums import greatest_quorum
 
 
-def intact_nodes(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool], Set[Type]],
+def intact_nodes(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]],
                  b_nodes: set):
     """
     Takes an FBAS F (having quorum intersection) with set of nodes V and B ⊆ V and
@@ -14,18 +14,24 @@ def intact_nodes(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool], Set[T
     is_slice_contained, all_nodes = fbas
     current = all_nodes.difference(b_nodes)
     while True:
-        greatest_q = greatest_quorum(is_slice_contained, current, set(), set())
-        cur_fbas = (is_slice_contained, all_nodes.difference(greatest_q))
+        greatest_q = greatest_quorum(is_slice_contained, current, set())
+
+        def cur_is_slice_contained(candidate, node):
+            if node in greatest_q:
+                raise ValueError('node not defined in FBAS')
+            return is_slice_contained(candidate.union(greatest_q), node)
+
+        cur_fbas = (cur_is_slice_contained, all_nodes.difference(greatest_q))
         # determine whether F^{V\Q} has quorum intersection:
-        result = quorum_intersection(cur_fbas, greatest_q)
+        result = quorum_intersection(cur_fbas)
         if result is True:
             return greatest_q
         # else:
         _, quorum1, quorum2 = result
         current_w1 = greatest_quorum(is_slice_contained, greatest_q.difference(quorum1),
-                                     set(), set())
+                                     set())
         current_w2 = greatest_quorum(is_slice_contained, greatest_q.difference(quorum2),
-                                     set(), set())
+                                     set())
         if current_w1 == set():
             current = current_w2
         elif current_w2 == set():

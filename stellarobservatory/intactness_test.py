@@ -12,8 +12,8 @@ def test_intact_nodes():
         'D': [{'B', 'D'}, {'C', 'D'}]
     }
 
-    def is_slice_contained(nodes_subset, node, without_d) -> bool:
-        return contains_slice(nodes_subset, slices_by_node, node, without_d)
+    def is_slice_contained(nodes_subset, node) -> bool:
+        return contains_slice(nodes_subset, slices_by_node, node)
 
     res = intact_nodes((is_slice_contained, {'A', 'B', 'C', 'D'}), {'A'})
     assert res == {'C', 'D'}

@@ -7,20 +7,20 @@ from typing import Type
 # Allow for defining an FBAS as a function: (set<T>, T, set<T>) -> bool.
 # This function returns True, iff the FBAS has a slice for the given node T in the given
 # set.
-def enumerate_quorums(fbas: Tuple[Callable[[Set[Type], Type, Set[Type]], bool], Set[Type]]):
+def enumerate_quorums(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]]):
     """Enumerate all quorums of FBAS F (given by the pair (function(set<T>, T) -> bool, set))."""
     (is_slice_contained, all_nodes) = fbas
     return traverse_quorums(is_slice_contained, set(), all_nodes)
 
 
-def traverse_quorums(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], bool],
+def traverse_quorums(is_slice_contained: Callable[[Set[Type], Type], bool],
                      committed: set,
                      remaining: set):
     """Given a FBAS F (by is_slice_contained) with set of nodes V
     and given the sets: committed ⊆ V; R ⊆ V\\committed,
     enumerate all quorums Q of F with committed ⊆ Q ⊆ committed ∪ remaining"""
     perimeter = committed.union(remaining)
-    greatest_q = greatest_quorum(is_slice_contained, perimeter, committed, set())
+    greatest_q = greatest_quorum(is_slice_contained, perimeter, committed)
     if greatest_q == set():
         return
     yield frozenset(greatest_q)
@@ -39,10 +39,9 @@ def traverse_quorums(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], 
         current = current.difference({node})
 
 
-def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], bool],
+def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
                     nodes: set,
-                    lower_bound: set,
-                    without_d: set):
+                    lower_bound: set):
     """
     Return greatest quorum contained in nodes if it is a super set of lower_bound
     or empty set (if there is no such quorum).
@@ -50,7 +49,7 @@ def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], b
     while True:
         next_u = set()
         for node in nodes:
-            if is_slice_contained(nodes, node, without_d):
+            if is_slice_contained(nodes, node):
                 next_u.add(node)
             else:
                 if node in lower_bound:
@@ -60,14 +59,10 @@ def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type, Set[Type]], b
         nodes = next_u
 
 
-def contains_slice(nodes_subset, slices_by_node, node, without_d):
+def contains_slice(nodes_subset: Set, slices_by_node, node):
     """Check if for the given node quorum slices there is a quorum slice
     contained in the subset of nodes.
     Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V, a set D ⊆ V
     Output: whether node has a quorum slice in the FBAS (without D) contained in nodes_subset"""
-    if without_d == set():  # minor optimization to not recompute difference in loop:
-        return any(quorum_slice.issubset(nodes_subset)
-                   for quorum_slice in slices_by_node[node])
-
-    return any(quorum_slice.difference(without_d).issubset(nodes_subset)
+    return any(quorum_slice.issubset(nodes_subset)
                for quorum_slice in slices_by_node[node])
