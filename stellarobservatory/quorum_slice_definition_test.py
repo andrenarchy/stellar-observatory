@@ -2,7 +2,7 @@
 import pytest
 from .utils.sets import deepfreezesets
 from .quorum_slice_definition import generate_quorum_slices, get_normalized_definition, \
-    remove_from_definition
+    remove_from_definition, satisfies_definition
 
 DEFINITION = {'threshold': 2, 'nodes': {'A', 'B', 'C'}, 'children_definitions': []}
 DEFINITION_WITHOUT_B = {'threshold': 1, 'nodes': {'A', 'C'}, 'children_definitions': []}
@@ -40,3 +40,11 @@ def test_qslice_generation():
     expected_sets_full.add(frozenset(['A', 'B', 'C']))
     result_full = generate_quorum_slices(DEFINITION, mode='full')
     assert deepfreezesets(result_full) == expected_sets_full
+
+def test_satisfies_definition():
+    """Test satisfies_definition()"""
+    assert satisfies_definition({'A', 'C'}, DEFINITION) is True
+    assert satisfies_definition({'A'}, DEFINITION) is False
+    nested_definition = {'threshold': 2, 'nodes': {'D'}, 'children_definitions': [DEFINITION]}
+    assert satisfies_definition({'A', 'C', 'D'}, nested_definition) is True
+    assert satisfies_definition({'A', 'C'}, nested_definition) is False
