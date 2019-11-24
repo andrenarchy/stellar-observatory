@@ -10,7 +10,8 @@ def quorum_intersection(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]
     is_slice_contained, all_nodes = fbas
     len_all_nodes = len(all_nodes)
     for quorum in traverse_min_quorums(is_slice_contained, set(), all_nodes, len_all_nodes):
-        greatest_q = greatest_quorum(is_slice_contained, all_nodes.difference(quorum), set())
+        greatest_q = greatest_quorum(is_slice_contained,
+                                     all_nodes.difference(quorum), set())
         if greatest_q != set():
             return False, quorum, greatest_q
     return True
@@ -21,7 +22,8 @@ def contains_proper_sub_quorum(is_slice_contained: Callable[[Set[Type], Type], b
     """Takes an FBAS with set of nodes V; and a subset U of V and
     returns whether there is a quorum Q not fully contained U"""
     for node in subset_nodes:
-        if greatest_quorum(is_slice_contained, subset_nodes.difference({node}), set()) != set():
+        if greatest_quorum(is_slice_contained,
+                           subset_nodes.difference({node}), set()) != set():
             return True
     return False
 

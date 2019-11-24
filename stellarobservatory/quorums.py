@@ -4,7 +4,7 @@ from typing import Callable, Tuple, Set
 from typing import Type
 
 
-# Allow for defining an FBAS as a function: (set<T>, T) -> bool.
+# Allow for defining an FBAS as a function: (set<T>, T, set<T>) -> bool.
 # This function returns True, iff the FBAS has a slice for the given node T in the given
 # set.
 def enumerate_quorums(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]]):
@@ -58,9 +58,11 @@ def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
             return next_u
         nodes = next_u
 
-def contains_slice(nodes_subset, slices_by_node, node):
+
+def contains_slice(nodes_subset: Set, slices_by_node, node):
     """Check if for the given node quorum slices there is a quorum slice
     contained in the subset of nodes.
-    Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V
-    Output: whether node has a quorum slice contained in nodes_subset"""
-    return any(quorum_slice.issubset(nodes_subset) for quorum_slice in slices_by_node[node])
+    Input: FBAS(V,S) implicitly passed in via slices; nodes_subset ⊆ V; node ∈ V, a set D ⊆ V
+    Output: whether node has a quorum slice in the FBAS (without D) contained in nodes_subset"""
+    return any(quorum_slice.issubset(nodes_subset)
+               for quorum_slice in slices_by_node[node])
