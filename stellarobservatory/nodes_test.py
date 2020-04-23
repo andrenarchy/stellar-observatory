@@ -35,9 +35,23 @@ def test_node_dependencies():
             'publicKey': 'D',
             'quorumSet': {'threshold': 2, 'validators': ['A', 'B', 'C', 'D'], 'innerQuorumSets': []}
         },
+        {
+            'publicKey': 'E',
+            'quorumSet':{
+                'threshold': 2,
+                'validators': ['A'],
+                'innerQuorumSets':[
+                    {'threshold': 1, 'validators': ['A', 'D'], 'innerQuorumSets': []}
+                ]
+            }
+        },
     ]
     nodes_by_public_key = get_nodes_by_public_key(nodes)
     dependencies_a = get_node_dependencies(nodes_by_public_key, 'A')
     assert frozenset(dependencies_a) == frozenset(['A', 'B', 'C'])
+    dependencies_a_int = get_node_dependencies(nodes_by_public_key, 'A', transitive=False)
+    assert frozenset(dependencies_a_int) == frozenset(['A', 'B'])
     dependencies_d = get_node_dependencies(nodes_by_public_key, 'D')
     assert frozenset(dependencies_d) == frozenset(['A', 'B', 'C', 'D'])
+    dependencies_e_int = get_node_dependencies(nodes_by_public_key, 'E', transitive=False)
+    assert frozenset(dependencies_e_int) == frozenset(['A', 'D', 'E'])
