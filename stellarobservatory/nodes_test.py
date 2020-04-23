@@ -10,43 +10,44 @@ def test_stellarbeat_nodes():
         assert isinstance(node, dict)
         assert 'publicKey' in node
 
+nodes_ABCDE = [
+    {
+        'publicKey': 'A',
+        'quorumSet': {'threshold': 2, 'validators': ['A', 'B'], 'innerQuorumSets': []}
+    },
+    {
+        'publicKey': 'B',
+        'quorumSet': {
+            'threshold': 2,
+            'validators': ['B'],
+            'innerQuorumSets':[
+                {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
+            ]
+        }
+    },
+    {
+        'publicKey': 'C',
+        'quorumSet': {'threshold': 2, 'validators': ['A', 'C'], 'innerQuorumSets': []}
+    },
+    {
+        'publicKey': 'D',
+        'quorumSet': {'threshold': 2, 'validators': ['A', 'B', 'C', 'D'], 'innerQuorumSets': []}
+    },
+    {
+        'publicKey': 'E',
+        'quorumSet':{
+            'threshold': 2,
+            'validators': ['A'],
+            'innerQuorumSets':[
+                {'threshold': 1, 'validators': ['A', 'D'], 'innerQuorumSets': []}
+            ]
+        }
+    },
+]
+
 def test_node_dependencies():
     """Test get_node_dependencies()"""
-    nodes = [
-        {
-            'publicKey': 'A',
-            'quorumSet': {'threshold': 2, 'validators': ['A', 'B'], 'innerQuorumSets': []}
-        },
-        {
-            'publicKey': 'B',
-            'quorumSet': {
-                'threshold': 2,
-                'validators': ['B'],
-                'innerQuorumSets':[
-                    {'threshold': 1, 'validators': ['A', 'C'], 'innerQuorumSets': []}
-                ]
-            }
-        },
-        {
-            'publicKey': 'C',
-            'quorumSet': {'threshold': 2, 'validators': ['A', 'C'], 'innerQuorumSets': []}
-        },
-        {
-            'publicKey': 'D',
-            'quorumSet': {'threshold': 2, 'validators': ['A', 'B', 'C', 'D'], 'innerQuorumSets': []}
-        },
-        {
-            'publicKey': 'E',
-            'quorumSet':{
-                'threshold': 2,
-                'validators': ['A'],
-                'innerQuorumSets':[
-                    {'threshold': 1, 'validators': ['A', 'D'], 'innerQuorumSets': []}
-                ]
-            }
-        },
-    ]
-    nodes_by_public_key = get_nodes_by_public_key(nodes)
+    nodes_by_public_key = get_nodes_by_public_key(nodes_ABCDE)
     dependencies_a = get_node_dependencies(nodes_by_public_key, 'A')
     assert frozenset(dependencies_a) == frozenset(['A', 'B', 'C'])
     dependencies_a_int = get_node_dependencies(nodes_by_public_key, 'A', transitive=False)
