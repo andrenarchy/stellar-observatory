@@ -17,7 +17,7 @@ def convert_public_keys_to_names(nodes_by_public_key, public_keys):
         for public_key in public_keys
     }
 
-def get_node_dependencies(nodes_by_public_key, public_key, dependencies=None):
+def get_node_dependencies(nodes_by_public_key, public_key, dependencies=None, transitive=True):
     """Get public keys of all nodes a node depends on (also transitively)"""
     if dependencies is None:
         dependencies = set([public_key])
@@ -27,7 +27,8 @@ def get_node_dependencies(nodes_by_public_key, public_key, dependencies=None):
         for validator in quorum_set_definition['validators']:
             if validator not in dependencies:
                 dependencies.add(validator)
-                get_node_dependencies(nodes_by_public_key, validator, dependencies)
+                if transitive
+                    get_node_dependencies(nodes_by_public_key, validator, dependencies)
         for inner_quorum_set_definition in quorum_set_definition['innerQuorumSets']:
             traverse_quorum_set_definition(inner_quorum_set_definition)
 
