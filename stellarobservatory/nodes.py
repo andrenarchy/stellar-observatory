@@ -28,6 +28,7 @@ def get_node_dependencies(nodes_by_public_key, public_key, dependencies=None, tr
             if validator not in dependencies:
                 dependencies.add(validator)
                 if transitive
+                if transitive:
                     get_node_dependencies(nodes_by_public_key, validator, dependencies)
         for inner_quorum_set_definition in quorum_set_definition['innerQuorumSets']:
             traverse_quorum_set_definition(inner_quorum_set_definition)
