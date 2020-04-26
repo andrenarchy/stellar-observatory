@@ -1,0 +1,35 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: "3.x"
+    - uses: actions/checkout@v2
+    - name: Install dev dependencies
+      run: pip install -r requirements.txt
+    - name: Lint
+      run: pylint setup.py stellarobservatory
+    - name: Check typings
+      run: mypy .
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: "3.x"
+    - uses: actions/checkout@v2
+    - name: Install dev dependencies
+      run: pip install -r requirements.txt
+    - name: Install package
+      run: pip install .
+    - name: Test
+      run: pytest
