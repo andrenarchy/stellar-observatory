@@ -36,7 +36,10 @@ def get_node_dependencies(nodes_by_public_key, public_key, dependencies=None, tr
     return dependencies
 
 def get_trust_graph(nodes_by_public_key):
-    """Map each node's public key to its trust graph (the set of nodes it references in its quorum slices). The node itself is excluded."""
+    """
+    Map each node's public key to its trust graph (the set of nodes it
+    references in its quorum slices). The node itself is excluded.
+    """
     graph = {}
     for key in nodes_by_public_key:
         nodes_intrans = get_node_dependencies(nodes_by_public_key, key, dependencies=set(), transitive=False)
