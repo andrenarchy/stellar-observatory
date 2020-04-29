@@ -42,7 +42,8 @@ def get_trust_graph(nodes_by_public_key):
     """
     graph = {}
     for key in nodes_by_public_key:
-        nodes_intrans = get_node_dependencies(nodes_by_public_key, key, dependencies=set(), transitive=False)
+        nodes_intrans = get_node_dependencies(nodes_by_public_key, key, \
+                                          dependencies=set(), transitive=False)
         graph[key] = set(nodes_intrans)
         graph[key].discard(key)
     return graph
