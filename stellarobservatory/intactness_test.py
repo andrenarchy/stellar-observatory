@@ -35,6 +35,9 @@ def test_intact_nodes_complex():
         return contains_slice(nodes_subset, slices_by_node, node)
 
     assert intact_nodes((is_slice_contained, nodes), {1}) == set()
-    assert intact_nodes((is_slice_contained, nodes), {2, 3}) == {1, 4, 5}
+    assert intact_nodes((is_slice_contained, nodes), {2}) == {1, 3, 4, 5}
     assert intact_nodes((is_slice_contained, nodes), {3}) == {1, 4, 5}
+    assert intact_nodes((is_slice_contained, nodes), {4}) == {1, 2, 3, 5}
+    assert intact_nodes((is_slice_contained, nodes), {5}) == {1, 2, 3, 4}
+    assert intact_nodes((is_slice_contained, nodes), {2, 3}) == {1, 4, 5}
     assert intact_nodes((is_slice_contained, nodes), {4, 5}) == {1, 2, 3}
