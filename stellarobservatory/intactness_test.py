@@ -1,7 +1,6 @@
 """Tests for Torstens's intactNode Algorithm"""
 from stellarobservatory.intactness import intact_nodes
 from stellarobservatory.quorums import contains_slice
-from stellarobservatory.utils.sets import powerset
 
 
 def test_intact_nodes():
