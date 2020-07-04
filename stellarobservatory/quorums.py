@@ -54,7 +54,7 @@ def greatest_quorum(is_slice_contained: Callable[[Set[Type], Type], bool],
             else:
                 if node in lower_bound:
                     return set()
-        if len(nodes) == len(next_u):
+        if len(nodes) == len(next_u) or len(next_u) == 0:
             return next_u
         nodes = next_u
 
