@@ -24,6 +24,16 @@ def get_strongly_connected_components(graph):
     csgraph = csr_matrix((data, (row_indexes, col_indexes)), shape=(n_nodes, n_nodes))
     n_components, labels = connected_components(csgraph, directed=True, connection='strong')
     sccs = [[] for i in range(n_components)]
+    scc_graph = dict()
     for index, label in enumerate(labels):
-        sccs[label] += [nodes[index]]
-    return [frozenset(scc) for scc in sccs]
+        node = nodes[index]
+        sccs[label] += [node]
+        if label not in scc_graph:
+            scc_graph[label] = set()
+        for target_node in graph[node]:
+            target_index = node_index_by_node[target_node]
+            target_label = labels[target_index]
+            if target_label != label:
+                scc_graph[label].add(labels[target_index])
+
+    return [frozenset(scc) for scc in sccs], {scc: frozenset(target_sccs) for scc, target_sccs in scc_graph.items()}
