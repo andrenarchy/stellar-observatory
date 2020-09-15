@@ -16,5 +16,6 @@ def test_get_strongly_connected_components():
         8: {9},
         9: {5}
     }
-    sccs = get_strongly_connected_components(graph)
+    sccs, scc_graph = get_strongly_connected_components(graph)
     assert sccs == [{1, 2, 3, 4}, {5, 6, 7, 8, 9}]
+    assert scc_graph == {0: set(), 1: {0}}
