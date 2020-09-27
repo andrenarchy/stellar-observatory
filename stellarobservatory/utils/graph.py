@@ -16,3 +16,15 @@ def get_indegrees(graph):
 def get_induced_subgraph(graph, nodes):
     """Get the nodes-induced subgraph G[S] for a graph G and a subset of nodes S"""
     return {node: graph[node].intersection(nodes) for node in nodes}
+
+def get_dependencies(graph, node):
+    """Get the dependencies of a node"""
+    dependencies = set()
+    def traverse_nodes(nodes):
+        for candidate in nodes:
+            if candidate not in dependencies:
+                dependencies.add(candidate)
+                traverse_nodes(graph[candidate])
+    traverse_nodes(graph[node])
+    dependencies.discard(node)
+    return dependencies
