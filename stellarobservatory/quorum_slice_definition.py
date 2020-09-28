@@ -2,6 +2,45 @@
 
 from itertools import chain, combinations, product
 
+def get_direct_dependencies(definitions_by_node, node):
+    """Get direct dependencies of a node"""
+    dependencies = set([node])
+
+    def traverse_definition(definition):
+        """Traverses a definition and adds them to the dependencies"""
+        for dependency in definition['nodes']:
+            if dependency not in dependencies:
+                dependencies.add(dependency)
+        for children_definition in definition['children_definitions']:
+            traverse_definition(children_definition)
+    traverse_definition(definitions_by_node[node])
+
+    dependencies.discard(node)
+    return dependencies
+
+def get_transitive_dependencies(definitions_by_node, node):
+    """Get transitive dependencies of a node"""
+    dependencies = set()
+    pending_dependencies = set([node])
+    while len(pending_dependencies) > 0:
+        dependencies.update(pending_dependencies)
+        new_pending_dependencies = set()
+        for dependency in pending_dependencies:
+            new_pending_dependencies.update(
+                get_direct_dependencies(definitions_by_node, dependency)
+            )
+        pending_dependencies = new_pending_dependencies.difference(dependencies)
+    dependencies.discard(node)
+    return dependencies
+
+def get_trust_graph(definitions_by_node):
+    """
+    Map each node's public key to its trust graph (the set of nodes it
+    references in its quorum slice definitionss). The node itself is excluded.
+    """
+    return {node: get_direct_dependencies(definitions_by_node, node) \
+        for node in definitions_by_node.keys()}
+
 def remove_from_definition(definition, node):
     """Return quorum slice definition with the given node removed and the threshold reduced by 1"""
     threshold = definition['threshold']
