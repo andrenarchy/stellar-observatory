@@ -118,10 +118,12 @@ def satisfies_definition(candidate: Nodes, definition: Definition):
             satisfied += 1
     return satisfied >= definition['threshold']
 
-def get_is_slice_contained(nodes: Nodes, definitions_by_node: Definitions) -> Callable[[Nodes, Node], bool]:
+def get_is_slice_contained(definitions_by_node: Definitions) -> Callable[[Nodes, Node], bool]:
+    '''Returns a function that checks whether a node's slice is contained in a candidate set'''
     return lambda candidate, node: satisfies_definition(candidate, definitions_by_node[node])
 
 def quorum_slices_to_definition(quorum_slices: List[Nodes]) -> Definition:
+    '''Returns a quorum slice definition for a list of quorum slices'''
     return {
         'threshold': 1,
         'nodes': set(),

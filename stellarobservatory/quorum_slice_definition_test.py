@@ -92,13 +92,17 @@ def test_satisfies_definition():
     """Test satisfies_definition()"""
     assert satisfies_definition({'A', 'C'}, DEFINITION) is True
     assert satisfies_definition({'A'}, DEFINITION) is False
-    nested_definition: Definition = {'threshold': 2, 'nodes': {'D'}, 'children_definitions': [DEFINITION]}
+    nested_definition: Definition = {
+        'threshold': 2,
+        'nodes': {'D'},
+        'children_definitions': [DEFINITION]
+        }
     assert satisfies_definition({'A', 'C', 'D'}, nested_definition) is True
     assert satisfies_definition({'A', 'C'}, nested_definition) is False
 
 def test_get_is_slice_contained():
     """Test get_is_slice_contained()"""
-    is_slice_contained = get_is_slice_contained(set(DEFINITIONS_BY_NODE_ABCDE.keys()), DEFINITIONS_BY_NODE_ABCDE)
+    is_slice_contained = get_is_slice_contained(DEFINITIONS_BY_NODE_ABCDE)
     assert is_slice_contained({'A', 'B'}, 'A') is True
     assert is_slice_contained({'A'}, 'A') is False
     assert is_slice_contained({'A', 'B', 'C'}, 'A') is True
