@@ -1,10 +1,14 @@
 """Utilities for strongly connected components"""
+from typing import Dict, List, Tuple
 import numpy
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
 
+from .graph import Node, Nodes, Graph
 
-def get_graph_csr_matrix(graph, nodes, node_index_by_node):
+NodeIndexes = Dict[Node, int]
+
+def get_graph_csr_matrix(graph: Graph, nodes: List[Node], node_index_by_node: NodeIndexes):
     """
     Get CSR matrix representation of graph
     """
@@ -17,15 +21,16 @@ def get_graph_csr_matrix(graph, nodes, node_index_by_node):
     n_nodes = len(nodes)
     return csr_matrix((data, (row_indexes, col_indexes)), shape=(n_nodes, n_nodes))
 
-def get_scc_graph(graph, nodes, node_index_by_node, labels, n_components):
+def get_scc_graph(graph: Graph, nodes: List[Node], node_index_by_node: NodeIndexes,
+                  labels: List[int], n_components: int):
     """
     Get SCCs as graph
     """
-    sccs = [[] for i in range(n_components)]
-    scc_graph = dict()
+    sccs: List[Nodes] = [set() for i in range(n_components)]
+    scc_graph: Graph = dict()
     for index, label in enumerate(labels):
         node = nodes[index]
-        sccs[label] += [node]
+        sccs[label].add(node)
         if label not in scc_graph:
             scc_graph[label] = set()
         for target_node in graph[node]:
@@ -36,7 +41,7 @@ def get_scc_graph(graph, nodes, node_index_by_node, labels, n_components):
     return sccs, scc_graph
 
 
-def get_strongly_connected_components(graph):
+def get_strongly_connected_components(graph: Graph) -> Tuple[List[Nodes], Graph]:
     """
     Get strongly connected components for a directed graph
 
@@ -49,5 +54,4 @@ def get_strongly_connected_components(graph):
     csgraph = get_graph_csr_matrix(graph, nodes, node_index_by_node)
     n_components, labels = connected_components(csgraph, directed=True, connection='strong')
     sccs, scc_graph = get_scc_graph(graph, nodes, node_index_by_node, labels, n_components)
-    return [frozenset(scc) for scc in sccs], \
-        {scc: frozenset(target_sccs) for scc, target_sccs in scc_graph.items()}
+    return sccs, scc_graph

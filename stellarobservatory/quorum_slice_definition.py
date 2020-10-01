@@ -1,22 +1,23 @@
 """Quorum slice definitions"""
 
 from itertools import chain, combinations, product
-from typing import TypedDict, Dict, Set, List, Any
+from typing import TypedDict, Dict, Set, Any
+
+from .utils.graph import Node, Nodes, Graph
 
 Definition = TypedDict('Definition', {
     'threshold': int,
-    'nodes': Set[str],
+    'nodes': Nodes,
     # NOTE: use List['Definition] when  https://github.com/python/mypy/issues/731 is fixed
     'children_definitions': Any
 })
+Definitions = Dict[Node, Definition]
 
-Definitions = Dict[str, Definition]
-
-def get_direct_dependencies(definitions_by_node: Definitions, node: str):
+def get_direct_dependencies(definitions_by_node: Definitions, node: Node) -> Nodes:
     """Get direct dependencies of a node"""
     dependencies = set([node])
 
-    def traverse_definition(definition):
+    def traverse_definition(definition: Definition):
         """Traverses a definition and adds them to the dependencies"""
         for dependency in definition['nodes']:
             if dependency not in dependencies:
@@ -28,9 +29,9 @@ def get_direct_dependencies(definitions_by_node: Definitions, node: str):
     dependencies.discard(node)
     return dependencies
 
-def get_transitive_dependencies(definitions_by_node: Definitions, node: str):
+def get_transitive_dependencies(definitions_by_node: Definitions, node: Node) -> Nodes:
     """Get transitive dependencies of a node"""
-    dependencies = set()
+    dependencies: Set[Node] = set()
     pending_dependencies = set([node])
     while len(pending_dependencies) > 0:
         dependencies.update(pending_dependencies)
@@ -43,7 +44,7 @@ def get_transitive_dependencies(definitions_by_node: Definitions, node: str):
     dependencies.discard(node)
     return dependencies
 
-def get_trust_graph(definitions_by_node: Definitions):
+def get_trust_graph(definitions_by_node: Definitions) -> Graph:
     """
     Map each node's public key to its trust graph (the set of nodes it
     references in its quorum slice definitionss). The node itself is excluded.
@@ -51,7 +52,7 @@ def get_trust_graph(definitions_by_node: Definitions):
     return {node: get_direct_dependencies(definitions_by_node, node) \
         for node in definitions_by_node.keys()}
 
-def remove_from_definition(definition: Definition, node: str):
+def remove_from_definition(definition: Definition, node: Node) -> Definition:
     """Return quorum slice definition with the given node removed and the threshold reduced by 1"""
     threshold = definition['threshold']
     nodes = definition['nodes']
@@ -69,7 +70,7 @@ def remove_from_definition(definition: Definition, node: str):
         'children_definitions': children_definitions
     }
 
-def get_normalized_definition(definition: Definition, node: str):
+def get_normalized_definition(definition: Definition, node: Node) -> Definition:
     """Returns the node's quorum slice definition as Stellar Core preprocesses it
 
     The node is required on root level and removed from rest of quorum slice definition"""
@@ -105,7 +106,7 @@ def generate_quorum_slices(definition: Definition, mode='economic'):
         for quorum_slice_combination in quorum_slice_combinations
         ]))
 
-    return [frozenset(chain(*quorum_slice_product))
+    return [chain(*quorum_slice_product)
             for quorum_slice_product in quorum_slice_products]
 
 
