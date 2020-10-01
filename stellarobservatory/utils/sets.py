@@ -1,11 +1,12 @@
 """Utilities for sets"""
 from itertools import chain, combinations
+from typing import Iterable
 
 def deepfreezesets(sets_iterable):
     """Deep-freeze a list of sets"""
     return frozenset([frozenset(list(el)) for el in sets_iterable])
 
-def powerset(iterable):
+def powerset(iterable: Iterable) -> Iterable:
     """Return the power set of the input iterable"""
     frozen_iterable_set = frozenset(iterable)
     all_combinations = [combinations(frozen_iterable_set, size)

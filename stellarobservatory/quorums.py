@@ -1,7 +1,6 @@
 """Torstens's quorum enumeration"""
 
-from typing import Callable, Tuple, Set
-from typing import Type
+from typing import Callable, Tuple, Set, Type
 
 
 # Allow for defining an FBAS as a function: (set<T>, T, set<T>) -> bool.
