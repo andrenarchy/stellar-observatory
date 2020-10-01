@@ -3,18 +3,19 @@ import pytest
 from .utils.sets import deepfreezesets
 from .quorum_slice_definition import get_direct_dependencies, get_transitive_dependencies, \
     get_trust_graph, generate_quorum_slices, get_normalized_definition, \
-    remove_from_definition, satisfies_definition
+    remove_from_definition, satisfies_definition, get_is_slice_contained, \
+    quorum_slices_to_definition, Definition, Definitions
 
 
-DEFINITIONS_BY_NODE_ABCDE = {
-    'A': {'threshold': 2, 'nodes': ['A', 'B'], 'children_definitions': []},
-    'B': {'threshold': 2, 'nodes': ['B'], 'children_definitions': [
-        {'threshold': 1, 'nodes': ['A', 'C'], 'children_definitions': []}
+DEFINITIONS_BY_NODE_ABCDE: Definitions = {
+    'A': {'threshold': 2, 'nodes': {'A', 'B'}, 'children_definitions': []},
+    'B': {'threshold': 2, 'nodes': {'B'}, 'children_definitions': [
+        {'threshold': 1, 'nodes': {'A', 'C'}, 'children_definitions': []}
     ]},
-    'C': {'threshold': 2, 'nodes': ['A', 'C'], 'children_definitions': []},
-    'D': {'threshold': 2, 'nodes': ['A', 'B', 'C', 'D'], 'children_definitions': []},
-    'E': {'threshold': 2, 'nodes': ['A'], 'children_definitions': [
-        {'threshold': 1, 'nodes': ['A', 'D'], 'children_definitions': []},
+    'C': {'threshold': 2, 'nodes': {'A', 'C'}, 'children_definitions': []},
+    'D': {'threshold': 2, 'nodes': {'A', 'B', 'C', 'D'}, 'children_definitions': []},
+    'E': {'threshold': 2, 'nodes': {'A'}, 'children_definitions': [
+        {'threshold': 1, 'nodes': {'A', 'D'}, 'children_definitions': []},
     ]},
 }
 
@@ -50,8 +51,8 @@ def test_get_trust_graph():
         'E': {'A', 'D'}
     }
 
-DEFINITION = {'threshold': 2, 'nodes': {'A', 'B', 'C'}, 'children_definitions': []}
-DEFINITION_WITHOUT_B = {'threshold': 1, 'nodes': {'A', 'C'}, 'children_definitions': []}
+DEFINITION: Definition = {'threshold': 2, 'nodes': {'A', 'B', 'C'}, 'children_definitions': []}
+DEFINITION_WITHOUT_B: Definition = {'threshold': 1, 'nodes': {'A', 'C'}, 'children_definitions': []}
 
 @pytest.mark.parametrize('definition,node,expected', [
     (DEFINITION, 'B', DEFINITION_WITHOUT_B),
@@ -91,6 +92,33 @@ def test_satisfies_definition():
     """Test satisfies_definition()"""
     assert satisfies_definition({'A', 'C'}, DEFINITION) is True
     assert satisfies_definition({'A'}, DEFINITION) is False
-    nested_definition = {'threshold': 2, 'nodes': {'D'}, 'children_definitions': [DEFINITION]}
+    nested_definition: Definition = {'threshold': 2, 'nodes': {'D'}, 'children_definitions': [DEFINITION]}
     assert satisfies_definition({'A', 'C', 'D'}, nested_definition) is True
     assert satisfies_definition({'A', 'C'}, nested_definition) is False
+
+def test_get_is_slice_contained():
+    """Test get_is_slice_contained()"""
+    is_slice_contained = get_is_slice_contained(set(DEFINITIONS_BY_NODE_ABCDE.keys()), DEFINITIONS_BY_NODE_ABCDE)
+    assert is_slice_contained({'A', 'B'}, 'A') is True
+    assert is_slice_contained({'A'}, 'A') is False
+    assert is_slice_contained({'A', 'B', 'C'}, 'A') is True
+    assert is_slice_contained({'A', 'B'}, 'B') is True
+    assert is_slice_contained({'A', 'C'}, 'B') is False
+    assert is_slice_contained({'A', 'B', 'C'}, 'B') is True
+
+
+def test_quorum_slices_to_definition():
+    """Test quorum_slices_to_definition()"""
+    assert quorum_slices_to_definition([{'A', 'B'}, {'C'}]) == {
+        'threshold': 1,
+        'nodes': set(),
+        'children_definitions': [{
+            'threshold': 2,
+            'nodes': {'A', 'B'},
+            'children_definitions': set()
+        }, {
+            'threshold': 1,
+            'nodes': {'C'},
+            'children_definitions': set()
+        }]
+    }

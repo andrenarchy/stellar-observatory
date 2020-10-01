@@ -1,7 +1,7 @@
 """Quorum slice definitions"""
 
 from itertools import chain, combinations, product
-from typing import TypedDict, Dict, Set, Any
+from typing import Callable, List, TypedDict, Dict, Set, Any
 
 from .utils.graph import Node, Nodes, Graph
 
@@ -110,10 +110,24 @@ def generate_quorum_slices(definition: Definition, mode='economic'):
             for quorum_slice_product in quorum_slice_products]
 
 
-def satisfies_definition(candidate: Set[str], definition: Definition):
+def satisfies_definition(candidate: Nodes, definition: Definition):
     '''Checks if the candidate set contains a slice for the provided definition'''
     satisfied = len(definition['nodes'].intersection(candidate))
     for children_definition in definition['children_definitions']:
         if satisfies_definition(candidate, children_definition):
             satisfied += 1
     return satisfied >= definition['threshold']
+
+def get_is_slice_contained(nodes: Nodes, definitions_by_node: Definitions) -> Callable[[Nodes, Node], bool]:
+    return lambda candidate, node: satisfies_definition(candidate, definitions_by_node[node])
+
+def quorum_slices_to_definition(quorum_slices: List[Nodes]) -> Definition:
+    return {
+        'threshold': 1,
+        'nodes': set(),
+        'children_definitions': [{
+            'threshold': len(quorum_slice),
+            'nodes': set(quorum_slice),
+            'children_definitions': set()
+        } for quorum_slice in quorum_slices]
+    }
