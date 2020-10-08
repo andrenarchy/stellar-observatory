@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="stellar-observatory",
-    version="1.0a12",
+    version="1.0b1",
     author="André Gaul",
     author_email="andre@gaul.io",
     description="Python package for analyzing the Stellar network",
