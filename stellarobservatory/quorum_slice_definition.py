@@ -31,7 +31,7 @@ def get_direct_dependencies(definitions_by_node: Definitions, node: Node) -> Nod
 
 def get_transitive_dependencies(definitions_by_node: Definitions, node: Node) -> Nodes:
     """Get transitive dependencies of a node"""
-    dependencies: Set[Node] = set()
+    dependencies: Set = set()
     pending_dependencies = set([node])
     while len(pending_dependencies) > 0:
         dependencies.update(pending_dependencies)
@@ -80,7 +80,7 @@ def get_normalized_definition(definition: Definition, node: Node) -> Definition:
         'children_definitions': [remove_from_definition(definition, node)]
     }
 
-def generate_quorum_slices(definition: Definition, mode='economic'):
+def generate_quorum_slices(definition: Definition, mode='economic') -> List[List[Node]]:
     """Generate all quorum slices for a quorum slice definition
 
     'economic' mode only returns quorum slices of size equal to the threshold,
@@ -106,7 +106,7 @@ def generate_quorum_slices(definition: Definition, mode='economic'):
         for quorum_slice_combination in quorum_slice_combinations
         ]))
 
-    return [chain(*quorum_slice_product)
+    return [list(chain(*quorum_slice_product))
             for quorum_slice_product in quorum_slice_products]
 
 
