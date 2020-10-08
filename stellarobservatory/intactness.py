@@ -5,7 +5,7 @@ from stellarobservatory.quorum_intersection import quorum_intersection
 from stellarobservatory.quorums import greatest_quorum
 
 
-def intact_nodes(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]],
+def get_intact_nodes(fbas: Tuple[Callable[[Set[Type], Type], bool], Set[Type]],
                  b_nodes: set):
     """
     Takes an FBAS F (having quorum intersection) with set of nodes V and B ⊆ V and
