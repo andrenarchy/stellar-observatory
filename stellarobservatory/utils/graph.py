@@ -1,6 +1,7 @@
 """Utilities for graphs"""
 
-from typing import Dict, Set, TypeVar
+import numpy
+from typing import Dict, List, Set, TypeVar
 
 Node = TypeVar('Node')
 Nodes = Set[Node]
@@ -25,7 +26,7 @@ def get_induced_subgraph(graph: Graph, nodes: Nodes):
 
 def get_dependencies(graph: Graph, node: Node):
     """Get the dependencies of a node"""
-    dependencies = set()
+    dependencies: Set[Node] = set()
     def traverse_nodes(nodes):
         for candidate in nodes:
             if candidate not in dependencies:
@@ -34,3 +35,12 @@ def get_dependencies(graph: Graph, node: Node):
     traverse_nodes(graph[node])
     dependencies.discard(node)
     return dependencies
+
+def get_adjacency_matrix(node_list: List[Node], graph: Graph):
+    node_to_index = { node: index for index, node in enumerate(node_list) }
+    M = numpy.zeros((len(node_list), len(node_list)), dtype=int)
+    for node in node_list:
+        for dependency in graph[node]:
+            if dependency != node:
+                M[node_to_index[node], node_to_index[dependency]] = 1
+    return M
