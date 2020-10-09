@@ -1,4 +1,4 @@
-from itertools import chain
+from itertools import chain, combinations
 from stellarobservatory.quorums import enumerate_quorums, traverse_quorums
 from typing import Callable, List, Set
 import numpy
@@ -63,6 +63,16 @@ def get_quorum_subgraph_centralities(nodes: List[Node], definitions: Definitions
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
+def get_quorum_intersection_eigenvector_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+    fbas = (get_is_slice_contained(definitions), set(nodes))
+    quorums = list(enumerate_quorums(fbas))
+    hyperedge_list = list([a.intersection(b) for a, b in combinations(quorums, 2)])
+    incidence_matrix = get_hypergraph_incidence_matrix(nodes, hyperedge_list)
+    MMT = incidence_matrix.dot(incidence_matrix.T)
+    eigenvalues, eigenvectors = eig(MMT)
+    index = numpy.argsort(numpy.real(eigenvalues))[-1]
+    centralities = numpy.abs(eigenvectors[:, index])
+    return centralities / numpy.max(centralities)
 
 # def get_befouling_scc_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
 #     fbas = (get_is_slice_contained(definitions), set(nodes))

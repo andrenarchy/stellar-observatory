@@ -53,6 +53,15 @@ def quorum_subgraph_analyzer(nodes: List[Node], definitions: Definitions, node_n
     print_centralities(nodes, centralities.get_quorum_subgraph_centralities(nodes, definitions), node_names)
     print()
 
+
+def quorum_intersection_eigenvector_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+    print()
+    print('quorum intersection eigenvector analyzer')
+    print('--------------------------------------')
+    print('centralities:')
+    print_centralities(nodes, centralities.get_quorum_intersection_eigenvector_centralities(nodes, definitions), node_names)
+    print()
+
 def befouling_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
     def get_ill_behaved_weight(ill_behaved_nodes):
         return 1/len(ill_behaved_nodes)
@@ -97,7 +106,8 @@ examples: List[Example] = [
         subgraph_analyzer,
         befouling_analyzer,
         quorum_eigenvector_analyzer,
-        quorum_subgraph_analyzer
+        quorum_subgraph_analyzer,
+        quorum_intersection_eigenvector_analyzer
       ]
     },
     {
