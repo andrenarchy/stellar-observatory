@@ -62,6 +62,14 @@ def quorum_intersection_eigenvector_analyzer(nodes: List[Node], definitions: Def
     print_centralities(nodes, centralities.get_quorum_intersection_eigenvector_centralities(nodes, definitions), node_names)
     print()
 
+def quorum_intersection_subgraph_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+    print()
+    print('quorum intersection subgraph analyzer')
+    print('-------------------------------------')
+    print('centralities:')
+    print_centralities(nodes, centralities.get_quorum_intersection_subgraph_centralities(nodes, definitions), node_names)
+    print()
+
 def befouledness_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
     def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
         def get_ill_behaved_weight(ill_behaved_nodes):
@@ -119,6 +127,7 @@ examples: List[Example] = [
         quorum_eigenvector_analyzer,
         quorum_subgraph_analyzer,
         quorum_intersection_eigenvector_analyzer,
+        quorum_intersection_subgraph_analyzer,
         befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
         hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
       ]
@@ -141,11 +150,29 @@ examples: List[Example] = [
             4: [{1,3,4}]
         }),
         'analyzers': [
-          eigenvector_analyzer,
           subgraph_analyzer,
           quorum_eigenvector_analyzer,
           quorum_subgraph_analyzer,
-          quorum_intersection_eigenvector_analyzer,
+          quorum_intersection_subgraph_analyzer,
+          befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+          hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
+        ]
+    },
+    {
+        'name': 'Example X: two SCCs v2',
+        'nodes': [1, 2, 3, 4],
+        'node_names': None,
+        'quorum_slice_definitions': slices_to_definitions({
+            1: [{1,2}],
+            2: [{1,2}],
+            3: [{1,3},{3,4}],
+            4: [{1,3,4}]
+        }),
+        'analyzers': [
+          subgraph_analyzer,
+          quorum_eigenvector_analyzer,
+          quorum_subgraph_analyzer,
+          quorum_intersection_subgraph_analyzer,
           befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
           hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
         ]
@@ -162,11 +189,10 @@ examples: List[Example] = [
             5: [{1,4,5}]
         }),
         'analyzers': [
-          eigenvector_analyzer,
           subgraph_analyzer,
           quorum_eigenvector_analyzer,
           quorum_subgraph_analyzer,
-          quorum_intersection_eigenvector_analyzer,
+          quorum_intersection_subgraph_analyzer,
           befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
           hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
         ]

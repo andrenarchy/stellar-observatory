@@ -55,6 +55,15 @@ def get_quorum_intersection_eigenvector_centralities(nodes: List[Node], definiti
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
+def get_quorum_intersection_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+    fbas = (get_is_slice_contained(definitions), set(nodes))
+    quorums = list(enumerate_quorums(fbas))
+    hyperedge_list = list([a.intersection(b) for a, b in combinations(quorums, 2)])
+    adjacency_matrix = get_hypergraph_adjacency_matrix(nodes, hyperedge_list)
+    expA = expm(adjacency_matrix)
+    centralities = numpy.diag(expA)
+    return centralities / numpy.max(centralities)
+
 def get_befouledness_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
     fbas = (get_is_slice_contained(definitions), set(nodes))
     node_to_index = { node: index for index, node in enumerate(nodes) }
