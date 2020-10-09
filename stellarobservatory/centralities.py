@@ -26,25 +26,6 @@ def get_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> nu
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
-def get_befouling_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
-    fbas = (get_is_slice_contained(definitions), set(nodes))
-    node_to_index = { node: index for index, node in enumerate(nodes) }
-    M = numpy.zeros((len(nodes), len(nodes)))
-    for ill_behaved_nodes in powerset(nodes):
-        if ill_behaved_nodes == set() or ill_behaved_nodes == set(nodes):
-            continue
-        intact_nodes = get_intact_nodes(fbas, ill_behaved_nodes)
-        befouled_nodes = set(nodes).difference(intact_nodes)
-        induced_befouled_nodes = befouled_nodes.difference(ill_behaved_nodes)
-        ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
-        for ill_behaved_node in ill_behaved_nodes:
-            for induced_befouled_node in induced_befouled_nodes:
-                M[node_to_index[ill_behaved_node], node_to_index[induced_befouled_node]] += ill_behaved_weight
-    eigenvalues, eigenvectors = eig(M)
-    index = numpy.argsort(numpy.real(eigenvalues))[-1]
-    centralities = numpy.abs(eigenvectors[:, index])
-    return centralities / numpy.max(centralities)
-
 def get_quorum_eigenvector_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
     fbas = (get_is_slice_contained(definitions), set(nodes))
     hyperedge_list = list(enumerate_quorums(fbas))
@@ -74,35 +55,57 @@ def get_quorum_intersection_eigenvector_centralities(nodes: List[Node], definiti
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-# def get_befouling_scc_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
-#     fbas = (get_is_slice_contained(definitions), set(nodes))
-#     node_to_index = { node: index for index, node in enumerate(nodes) }
-#     M = numpy.zeros((len(nodes), len(nodes)))
+def get_befouledness_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    fbas = (get_is_slice_contained(definitions), set(nodes))
+    node_to_index = { node: index for index, node in enumerate(nodes) }
+    M = numpy.zeros((len(nodes), len(nodes)))
 
-#     trust_graph = get_trust_graph(definitions)
-#     sccs, scc_graph = get_strongly_connected_components(trust_graph)
-#     scc_graph_transpose = get_transpose_graph(scc_graph)
+    for ill_behaved_nodes in powerset(nodes):
+        if ill_behaved_nodes == set() or ill_behaved_nodes == set(nodes):
+            continue
+        intact_nodes = get_intact_nodes(fbas, ill_behaved_nodes)
+        befouled_nodes = set(nodes).difference(intact_nodes)
+        induced_befouled_nodes = befouled_nodes.difference(ill_behaved_nodes)
+        ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
+        for ill_behaved_node in ill_behaved_nodes:
+            for induced_befouled_node in induced_befouled_nodes:
+                M[node_to_index[ill_behaved_node], node_to_index[induced_befouled_node]] += ill_behaved_weight
 
-#     for scc_index in scc_graph.keys():
-#         scc_dependencies = get_dependencies(scc_graph, scc_index)
-#         dependencies: Set[Node] = set()
-#         [dependencies.update(sccs[dependency]) for dependency in scc_dependencies]
-#         scc_dependents = get_dependencies(scc_graph_transpose, scc_index)
-#         dependents: Set[Node] = set()
-#         [dependents.update(sccs[dependent]) for dependent in scc_dependents]
+    eigenvalues, eigenvectors = eig(M)
+    index = numpy.argsort(numpy.real(eigenvalues))[-1]
+    centralities = numpy.abs(eigenvectors[:, index])
+    return centralities / numpy.max(centralities)
 
-    # for ill_behaved_nodes in powerset(nodes):
-    #     if ill_behaved_nodes == set() or ill_behaved_nodes == set(nodes):
-    #         continue
-    #     intact_nodes = get_intact_nodes(fbas, ill_behaved_nodes)
-    #     befouled_nodes = set(nodes).difference(intact_nodes)
-    #     induced_befouled_nodes = befouled_nodes.difference(ill_behaved_nodes)
-    #     ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
-    #     for ill_behaved_node in ill_behaved_nodes:
-    #         for induced_befouled_node in induced_befouled_nodes:
-    #             M[node_to_index[ill_behaved_node], node_to_index[induced_befouled_node]] += ill_behaved_weight
-    # eigenvalues, eigenvectors = eig(M)
-    # index = numpy.argsort(numpy.real(eigenvalues))[-1]
-    # centralities = numpy.abs(eigenvectors[:, index])
-    # return centralities / numpy.max(centralities)
-    # return numpy.ones(len(nodes))
+def get_hierarchical_befouledness_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    fbas = (get_is_slice_contained(definitions), set(nodes))
+    node_to_index = { node: index for index, node in enumerate(nodes) }
+    M = numpy.zeros((len(nodes), len(nodes)))
+
+    trust_graph = get_trust_graph(definitions)
+    sccs, scc_graph = get_strongly_connected_components(trust_graph)
+    scc_graph_transpose = get_transpose_graph(scc_graph)
+
+    for scc_index in scc_graph.keys():
+        scc_dependencies = get_dependencies(scc_graph, scc_index)
+        dependencies: Set[Node] = set()
+        [dependencies.update(sccs[dependency]) for dependency in scc_dependencies]
+        scc_dependents = get_dependencies(scc_graph_transpose, scc_index)
+        dependents: Set[Node] = set()
+        [dependents.update(sccs[dependent]) for dependent in scc_dependents]
+
+        for ill_behaved_nodes in powerset(dependencies.union(sccs[scc_index])):
+            if ill_behaved_nodes == set() or ill_behaved_nodes == set(nodes):
+                continue
+            intact_nodes = get_intact_nodes(fbas, ill_behaved_nodes)
+            befouled_nodes = set(nodes).difference(intact_nodes)
+            induced_befouled_nodes = befouled_nodes.difference(ill_behaved_nodes)
+            affected_befouled_nodes = induced_befouled_nodes.intersection(sccs[scc_index].union(dependents))
+            ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
+            for ill_behaved_node in ill_behaved_nodes:
+                for affected_befouled_node in affected_befouled_nodes:
+                    M[node_to_index[ill_behaved_node], node_to_index[affected_befouled_node]] += ill_behaved_weight
+
+    eigenvalues, eigenvectors = eig(M)
+    index = numpy.argsort(numpy.real(eigenvalues))[-1]
+    centralities = numpy.abs(eigenvectors[:, index])
+    return centralities / numpy.max(centralities)

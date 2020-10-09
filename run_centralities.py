@@ -62,15 +62,27 @@ def quorum_intersection_eigenvector_analyzer(nodes: List[Node], definitions: Def
     print_centralities(nodes, centralities.get_quorum_intersection_eigenvector_centralities(nodes, definitions), node_names)
     print()
 
-def befouling_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
-    def get_ill_behaved_weight(ill_behaved_nodes):
-        return 1/len(ill_behaved_nodes)
-    print()
-    print('befouling analyzer')
-    print('------------------------')
-    print('centralities:')
-    print_centralities(nodes, centralities.get_befouling_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
-    print()
+def befouledness_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+    def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+        def get_ill_behaved_weight(ill_behaved_nodes):
+            return 1/(2**len(ill_behaved_nodes))
+        print()
+        print('befouledness analyzer')
+        print('------------------------')
+        print('centralities:')
+        print_centralities(nodes, centralities.get_befouledness_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print()
+    return analyzer
+
+def hierarchical_befouledness_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+    def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+        print()
+        print('hierarchical befouledness analyzer')
+        print('----------------------------------')
+        print('centralities:')
+        print_centralities(nodes, centralities.get_hierarchical_befouledness_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print()
+    return analyzer
 
 NodesList = List[Node]
 class Example(Generic[Node], TypedDict):
@@ -104,10 +116,11 @@ examples: List[Example] = [
       'analyzers': [
         eigenvector_analyzer,
         subgraph_analyzer,
-        befouling_analyzer,
         quorum_eigenvector_analyzer,
         quorum_subgraph_analyzer,
-        quorum_intersection_eigenvector_analyzer
+        quorum_intersection_eigenvector_analyzer,
+        befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+        hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
       ]
     },
     {
@@ -117,16 +130,47 @@ examples: List[Example] = [
       'quorum_slice_definitions': stellar_network[1],
       'analyzers': [eigenvector_analyzer, subgraph_analyzer]
     },
-    # {
-    #     'name': 'Example 1',
-    #     'nodes': [1, 2, 3, 4],
-    #     'quorum_slices': {
-    #         1: [{1,2}],
-    #         2: [{1,2}],
-    #         3: [{1,3,4}],
-    #         4: [{1,3,4}]
-    #     }
-    # }
+    {
+        'name': 'Example X: two SCCs',
+        'nodes': [1, 2, 3, 4],
+        'node_names': None,
+        'quorum_slice_definitions': slices_to_definitions({
+            1: [{1,2}],
+            2: [{1,2}],
+            3: [{1,3,4}],
+            4: [{1,3,4}]
+        }),
+        'analyzers': [
+          eigenvector_analyzer,
+          subgraph_analyzer,
+          quorum_eigenvector_analyzer,
+          quorum_subgraph_analyzer,
+          quorum_intersection_eigenvector_analyzer,
+          befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+          hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
+        ]
+    },
+    {
+        'name': 'Example X: three SCCs',
+        'nodes': [1, 2, 3, 4, 5],
+        'node_names': None,
+        'quorum_slice_definitions': slices_to_definitions({
+            1: [{1,2}],
+            2: [{1,2}],
+            3: [{1,3,4}],
+            4: [{1,3,4}],
+            5: [{1,4,5}]
+        }),
+        'analyzers': [
+          eigenvector_analyzer,
+          subgraph_analyzer,
+          quorum_eigenvector_analyzer,
+          quorum_subgraph_analyzer,
+          quorum_intersection_eigenvector_analyzer,
+          befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+          hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
+        ]
+    }
 ]
 
 for example in examples:
