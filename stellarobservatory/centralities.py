@@ -1,12 +1,12 @@
 from itertools import chain, combinations
 from stellarobservatory.quorums import enumerate_quorums, traverse_quorums
-from typing import Callable, List, Set
+from typing import Callable, Dict, FrozenSet, List, Set
 import numpy
 from scipy.linalg import eig, expm
 
 from .intactness import get_intact_nodes
 from .quorum_slice_definition import Definitions, get_direct_dependencies, get_is_slice_contained, get_trust_graph
-from .utils.graph import get_adjacency_matrix, get_dependencies, get_transpose_graph, Node
+from .utils.graph import get_adjacency_matrix, get_dependencies, get_transpose_graph, Node, Nodes
 from .utils.hypergraph import Hypergraph, get_hypergraph_adjacency_matrix, get_hypergraph_incidence_matrix
 from .utils.scc import get_strongly_connected_components
 from .utils.sets import powerset
@@ -64,7 +64,7 @@ def get_quorum_intersection_subgraph_centralities(nodes: List[Node], definitions
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
-def get_befouledness_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_befouledness_matrix(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
     fbas = (get_is_slice_contained(definitions), set(nodes))
     node_to_index = { node: index for index, node in enumerate(nodes) }
     M = numpy.zeros((len(nodes), len(nodes)))
@@ -79,13 +79,23 @@ def get_befouledness_centralities(nodes: List[Node], definitions: Definitions, g
         for ill_behaved_node in ill_behaved_nodes:
             for induced_befouled_node in induced_befouled_nodes:
                 M[node_to_index[ill_behaved_node], node_to_index[induced_befouled_node]] += ill_behaved_weight
+    return M
 
+def get_befouledness_eigenvector_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    M = get_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
     eigenvalues, eigenvectors = eig(M)
     index = numpy.argsort(numpy.real(eigenvalues))[-1]
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_hierarchical_befouledness_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    M = get_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
+    A = numpy.eye(len(nodes)) - M / (2 * numpy.linalg.norm(M, 2))
+    centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
+
+    return centralities / numpy.max(centralities)
+
+def get_hierarchical_befouledness_matrix(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
     fbas = (get_is_slice_contained(definitions), set(nodes))
     node_to_index = { node: index for index, node in enumerate(nodes) }
     M = numpy.zeros((len(nodes), len(nodes)))
@@ -113,8 +123,67 @@ def get_hierarchical_befouledness_centralities(nodes: List[Node], definitions: D
             for ill_behaved_node in ill_behaved_nodes:
                 for affected_befouled_node in affected_befouled_nodes:
                     M[node_to_index[ill_behaved_node], node_to_index[affected_befouled_node]] += ill_behaved_weight
+    return M
 
+def get_hierarchical_befouledness_eigenvector_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    M = get_hierarchical_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
     eigenvalues, eigenvectors = eig(M)
     index = numpy.argsort(numpy.real(eigenvalues))[-1]
     centralities = numpy.abs(eigenvectors[:, index])
+    return centralities / numpy.max(centralities)
+
+def get_hierarchical_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    M = get_hierarchical_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
+    A = numpy.eye(len(nodes)) - M / (2 * numpy.linalg.norm(M, 2))
+    centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
+    return centralities / numpy.max(centralities)
+
+def get_minimal_befouledness_matrix(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    fbas = (get_is_slice_contained(definitions), set(nodes))
+    node_to_index = { node: index for index, node in enumerate(nodes) }
+    M = numpy.zeros((len(nodes), len(nodes)))
+
+    # note: this assumes that powerset() iterates from smallest to largest subset
+    def get_induced_befouled_nodes(ill_behaved_nodes: Nodes):
+        if ill_behaved_nodes == set() or ill_behaved_nodes == set(nodes):
+            return set()
+        intact_nodes = get_intact_nodes(fbas, ill_behaved_nodes)
+        befouled_nodes = set(nodes).difference(intact_nodes)
+        return befouled_nodes.difference(ill_behaved_nodes)
+
+    ill_behaved_to_induced_befouled: Dict[FrozenSet[Node], Set[Node]] = {}
+
+    def is_minimal_befouling(ill_behaved_nodes: Nodes, induced_befouled_nodes: Nodes):
+        for ill_behaved_node in ill_behaved_nodes:
+            smaller_induced_befouled_nodes = ill_behaved_to_induced_befouled[
+                frozenset(ill_behaved_nodes.difference({ill_behaved_node}))
+            ]
+            if smaller_induced_befouled_nodes.difference({ill_behaved_node}) >= induced_befouled_nodes:
+                return False
+        return True
+
+    for ill_behaved_nodes in powerset(nodes):
+        induced_befouled_nodes = get_induced_befouled_nodes(ill_behaved_nodes)
+        ill_behaved_to_induced_befouled[frozenset(ill_behaved_nodes)] = induced_befouled_nodes
+
+        if not is_minimal_befouling(ill_behaved_nodes, induced_befouled_nodes):
+            continue
+
+        ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
+        for ill_behaved_node in ill_behaved_nodes:
+            for induced_befouled_node in induced_befouled_nodes:
+                M[node_to_index[ill_behaved_node], node_to_index[induced_befouled_node]] += ill_behaved_weight
+    return M
+
+def get_minimal_befouledness_eigenvector_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    M = get_minimal_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
+    eigenvalues, eigenvectors = eig(M)
+    index = numpy.argsort(numpy.real(eigenvalues))[-1]
+    centralities = numpy.abs(eigenvectors[:, index])
+    return centralities / numpy.max(centralities)
+
+def get_minimal_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    M = get_minimal_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
+    A = numpy.eye(len(nodes)) - M / (2 * numpy.linalg.norm(M, 2))
+    centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
     return centralities / numpy.max(centralities)

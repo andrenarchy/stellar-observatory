@@ -70,25 +70,63 @@ def quorum_intersection_subgraph_analyzer(nodes: List[Node], definitions: Defini
     print_centralities(nodes, centralities.get_quorum_intersection_subgraph_centralities(nodes, definitions), node_names)
     print()
 
-def befouledness_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+def befouledness_eigenvector_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
     def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
-        def get_ill_behaved_weight(ill_behaved_nodes):
-            return 1/(2**len(ill_behaved_nodes))
         print()
-        print('befouledness analyzer')
-        print('------------------------')
+        print('befouledness eigenvector analyzer')
+        print('---------------------------------')
         print('centralities:')
-        print_centralities(nodes, centralities.get_befouledness_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print_centralities(nodes, centralities.get_befouledness_eigenvector_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
         print()
     return analyzer
 
-def hierarchical_befouledness_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+def befouledness_lgs_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
     def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
         print()
-        print('hierarchical befouledness analyzer')
-        print('----------------------------------')
+        print('befouledness lgs analyzer')
+        print('-------------------------')
         print('centralities:')
-        print_centralities(nodes, centralities.get_hierarchical_befouledness_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print_centralities(nodes, centralities.get_befouledness_lgs_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print()
+    return analyzer
+
+def hierarchical_befouledness_eigenvector_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+    def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+        print()
+        print('hierarchical befouledness eigenvector analyzer')
+        print('----------------------------------------------')
+        print('centralities:')
+        print_centralities(nodes, centralities.get_hierarchical_befouledness_eigenvector_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print()
+    return analyzer
+
+def hierarchical_befouledness_lgs_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+    def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+        print()
+        print('hierarchical befouledness lgs analyzer')
+        print('--------------------------------------')
+        print('centralities:')
+        print_centralities(nodes, centralities.get_hierarchical_befouledness_lgs_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print()
+    return analyzer
+
+def minimal_befouledness_eigenvector_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+    def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+        print()
+        print('minimal befouledness eigenvector analyzer')
+        print('-----------------------------------------')
+        print('centralities:')
+        print_centralities(nodes, centralities.get_minimal_befouledness_eigenvector_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
+        print()
+    return analyzer
+
+def minimal_befouledness_lgs_analyzer(get_ill_behaved_weight: Callable[[Nodes], float]):
+    def analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
+        print()
+        print('minimal befouledness lgs analyzer')
+        print('---------------------------------')
+        print('centralities:')
+        print_centralities(nodes, centralities.get_minimal_befouledness_lgs_centralities(nodes, definitions, get_ill_behaved_weight), node_names)
         print()
     return analyzer
 
@@ -115,21 +153,25 @@ examples: List[Example] = [
       'nodes': list(range(1,6)),
       'node_names': None,
       'quorum_slice_definitions': slices_to_definitions({
-        1: [{1,2}, {1,3}, {1,4}, {1,5}],
-        2: [{1,2}, {2,3}],
-        3: [{1,3}],
-        4: [{1,4}],
-        5: [{1,5}]
+            1: [{1,2}, {1,3}, {1,4}, {1,5}],
+            2: [{1,2}, {2,3}],
+            3: [{1,3}],
+            4: [{1,4}],
+            5: [{1,5}]
       }),
       'analyzers': [
-        eigenvector_analyzer,
-        subgraph_analyzer,
-        quorum_eigenvector_analyzer,
-        quorum_subgraph_analyzer,
-        quorum_intersection_eigenvector_analyzer,
-        quorum_intersection_subgraph_analyzer,
-        befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
-        hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
+            eigenvector_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            quorum_intersection_eigenvector_analyzer,
+            quorum_intersection_subgraph_analyzer,
+            befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
       ]
     },
     {
@@ -150,12 +192,16 @@ examples: List[Example] = [
             4: [{1,3,4}]
         }),
         'analyzers': [
-          subgraph_analyzer,
-          quorum_eigenvector_analyzer,
-          quorum_subgraph_analyzer,
-          quorum_intersection_subgraph_analyzer,
-          befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
-          hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            quorum_intersection_subgraph_analyzer,
+            befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
         ]
     },
     {
@@ -169,12 +215,16 @@ examples: List[Example] = [
             4: [{1,3,4}]
         }),
         'analyzers': [
-          subgraph_analyzer,
-          quorum_eigenvector_analyzer,
-          quorum_subgraph_analyzer,
-          quorum_intersection_subgraph_analyzer,
-          befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
-          hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            quorum_intersection_subgraph_analyzer,
+            befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
         ]
     },
     {
@@ -189,12 +239,60 @@ examples: List[Example] = [
             5: [{1,4,5}]
         }),
         'analyzers': [
-          subgraph_analyzer,
-          quorum_eigenvector_analyzer,
-          quorum_subgraph_analyzer,
-          quorum_intersection_subgraph_analyzer,
-          befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
-          hierarchical_befouledness_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes))
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            quorum_intersection_subgraph_analyzer,
+            befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+        ]
+    },
+    {
+        'name': 'Example X: 2 complex SCCs',
+        'nodes': [1, 2, 3, 4, 5],
+        'node_names': None,
+        'quorum_slice_definitions': {
+            1: {
+                'nodes': {1, 2},
+                'threshold': 2,
+                'children_definitions': []
+            },
+            2: {
+                'nodes': {1, 2, 3},
+                'threshold': 2,
+                'children_definitions': []
+            },
+            3: {
+                'nodes': {1, 2, 3},
+                'threshold': 2,
+                'children_definitions': []
+            },
+            4: {
+                'nodes': {1, 2, 3, 4, 5},
+                'threshold': 3,
+                'children_definitions': []
+            },
+            5: {
+                'nodes': {3, 4, 5},
+                'threshold': 2,
+                'children_definitions': []
+            }
+        },
+        'analyzers': [
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            quorum_intersection_subgraph_analyzer,
+            befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_eigenvector_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes)),
         ]
     }
 ]
