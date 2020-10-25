@@ -88,9 +88,9 @@ def get_befouledness_eigenvector_centralities(nodes: List[Node], definitions: De
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float], get_mu: Callable[[numpy.array], float]) -> numpy.array:
     M = get_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
-    A = numpy.eye(len(nodes)) - M / (2 * numpy.linalg.norm(M, 2))
+    A = numpy.eye(len(nodes)) - get_mu(M) * M
     centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
 
     return centralities / numpy.max(centralities)
@@ -132,9 +132,9 @@ def get_hierarchical_befouledness_eigenvector_centralities(nodes: List[Node], de
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_hierarchical_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_hierarchical_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float], get_mu: Callable[[numpy.array], float]) -> numpy.array:
     M = get_hierarchical_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
-    A = numpy.eye(len(nodes)) - M / (2 * numpy.linalg.norm(M, 2))
+    A = numpy.eye(len(nodes)) - get_mu(M) * M
     centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
     return centralities / numpy.max(centralities)
 
@@ -182,8 +182,8 @@ def get_minimal_befouledness_eigenvector_centralities(nodes: List[Node], definit
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_minimal_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_minimal_befouledness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float], get_mu: Callable[[numpy.array], float]) -> numpy.array:
     M = get_minimal_befouledness_matrix(nodes, definitions, get_ill_behaved_weight)
-    A = numpy.eye(len(nodes)) - M / (2 * numpy.linalg.norm(M, 2))
+    A = numpy.eye(len(nodes)) - get_mu(M) * M
     centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
     return centralities / numpy.max(centralities)
