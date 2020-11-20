@@ -1,3 +1,4 @@
+from stellarobservatory.dsets import enumerate_dsets
 from stellarobservatory.utils.scc import get_strongly_connected_components
 from stellarobservatory.quorums import enumerate_quorums
 import numpy
@@ -36,6 +37,10 @@ def quorum_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dic
     print('Quorums:')
     for quorum in enumerate_quorums(fbas):
         print({ node_names[node] if node_names is not None else node for node in quorum })
+    print()
+    print('Dsets:')
+    for dset in enumerate_dsets(fbas):
+        print({ node_names[node] if node_names is not None else node for node in dset })
     print()
 
 def scc_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
@@ -248,6 +253,89 @@ examples: List[Example] = [
             befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
             hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
       ]
+    },
+    {
+        'name': '4 nodes, 2 orgs',
+        'nodes': [1, 2, 3, 4],
+        'node_names': None,
+        'quorum_slice_definitions': {
+            1: {
+                'nodes': {1},
+                'threshold': 2,
+                'children_definitions': [{
+                    'nodes': {2, 3, 4},
+                    'threshold': 2,
+                    'children_definitions': []
+                }]
+            },
+            2: {
+                'nodes': {1},
+                'threshold': 2,
+                'children_definitions': [{
+                    'nodes': {2, 3, 4},
+                    'threshold': 2,
+                    'children_definitions': []
+                }]
+            },
+            3: {
+                'nodes': {1},
+                'threshold': 2,
+                'children_definitions': [{
+                    'nodes': {2, 3, 4},
+                    'threshold': 2,
+                    'children_definitions': []
+                }]
+            },
+            4: {
+                'nodes': {1},
+                'threshold': 2,
+                'children_definitions': [{
+                    'nodes': {2, 3, 4},
+                    'threshold': 2,
+                    'children_definitions': []
+                }]
+            },
+        },
+        'analyzers': [
+            scc_analyzer,
+            quorum_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+        ]
+    },
+    {
+        'name': '8 nodes, 2 orgs',
+        'nodes': list(range(1, 9)),
+        'node_names': None,
+        'quorum_slice_definitions': {
+            node: {
+                'nodes': set(),
+                'threshold': 2,
+                'children_definitions': [{
+                    'nodes': {1, 2, 3},
+                    'threshold': 2,
+                    'children_definitions': []
+                }, {
+                    'nodes': {4, 5, 6, 7, 8},
+                    'threshold': 3,
+                    'children_definitions': []
+                }]
+            } for node in range(1, 9)
+        },
+        'analyzers': [
+            scc_analyzer,
+            quorum_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+        ]
     },
     {
       'name': 'Stellar Network',
