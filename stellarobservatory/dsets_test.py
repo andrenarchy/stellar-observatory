@@ -4,7 +4,7 @@ from stellarobservatory.quorums import contains_slice
 
 
 def test_enumerate_dsets():
-    """Test intact_nodes (Example 4.13)"""
+    """Test enmumerate_dsets"""
     nodes = set(range(1, 9))
     slices_by_node = {
         1: [{1,2,3,7}],
