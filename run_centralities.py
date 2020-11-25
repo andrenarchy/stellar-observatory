@@ -464,7 +464,7 @@ examples: List[Example] = [
         'nodes': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5'],
         'node_names': None,
         'quorum_slice_definitions': {
-            node: get_normalized_definition({
+            node: {
                 'nodes': set(),
                 'threshold': 2,
                 'children_definitions': [
@@ -484,7 +484,7 @@ examples: List[Example] = [
                         'children_definitions': []
                     },
                 ]
-            }, node) for node in ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
+             } for node in ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
         },
         'analyzers': [
             scc_analyzer,
@@ -502,7 +502,7 @@ examples: List[Example] = [
         'nodes': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5'],
         'node_names': None,
         'quorum_slice_definitions': {
-            node: get_normalized_definition({
+            node: {
                 'nodes': set(),
                 'threshold': 2,
                 'children_definitions': [
@@ -522,7 +522,7 @@ examples: List[Example] = [
                         'children_definitions': []
                     },
                 ]
-            }, node) for node in ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
+            } for node in ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
         },
         'analyzers': [
             scc_analyzer,
