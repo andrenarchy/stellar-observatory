@@ -22,7 +22,7 @@ def get_eigenvector_centralities(nodes: List[Node], definitions: Definitions) ->
 def get_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
     trust_graph = get_trust_graph(definitions)
     adjacency_matrix = get_adjacency_matrix(nodes, trust_graph)
-    expA = expm(adjacency_matrix)
+    expA = expm(adjacency_matrix / numpy.linalg.norm(adjacency_matrix, 2))
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
@@ -40,7 +40,7 @@ def get_quorum_subgraph_centralities(nodes: List[Node], definitions: Definitions
     fbas = (get_is_slice_contained(definitions), set(nodes))
     hyperedge_list = list(enumerate_quorums(fbas))
     adjacency_matrix = get_hypergraph_adjacency_matrix(nodes, hyperedge_list)
-    expA = expm(adjacency_matrix)
+    expA = expm(adjacency_matrix / numpy.linalg.norm(adjacency_matrix, 2))
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
@@ -60,7 +60,7 @@ def get_quorum_intersection_subgraph_centralities(nodes: List[Node], definitions
     quorums = list(enumerate_quorums(fbas))
     hyperedge_list = list([a.intersection(b) for a, b in combinations(quorums, 2)])
     adjacency_matrix = get_hypergraph_adjacency_matrix(nodes, hyperedge_list)
-    expA = expm(adjacency_matrix)
+    expA = expm(adjacency_matrix / numpy.linalg.norm(adjacency_matrix, 2))
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
