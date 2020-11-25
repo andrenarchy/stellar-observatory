@@ -1,10 +1,11 @@
+from stellarobservatory.quorum_intersection import quorum_intersection
 from stellarobservatory.dsets import enumerate_dsets
 from stellarobservatory.utils.scc import get_strongly_connected_components
 from stellarobservatory.quorums import enumerate_quorums
 import numpy
 from typing import Callable, Dict, Generic, List, Set, TypeVar, TypedDict, Union
 from stellarobservatory import quorum_slice_definition, stellarbeat, centralities
-from stellarobservatory.quorum_slice_definition import Definitions, get_is_slice_contained, get_trust_graph
+from stellarobservatory.quorum_slice_definition import Definitions, get_is_slice_contained, get_normalized_definition, get_trust_graph
 from stellarobservatory.utils.graph import Node, Nodes
 
 def get_from_seed_node(seed_node: str):
@@ -35,12 +36,20 @@ def quorum_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dic
     print('------------------------')
     fbas = (get_is_slice_contained(definitions), set(nodes))
     print('Quorums:')
+    n_quorums = 0
     for quorum in enumerate_quorums(fbas):
-        print({ node_names[node] if node_names is not None else node for node in quorum })
+        n_quorums += 1
+        print(sorted({ node_names[node] if node_names is not None else node for node in quorum }))
+    print('({0} quorums in total)'.format(n_quorums))
+    has_quorum_intersection = quorum_intersection(fbas)
+    print(f'Quorum intersection: {has_quorum_intersection == True}')
     print()
     print('Dsets:')
+    n_dsets = 0
     for dset in enumerate_dsets(fbas):
-        print({ node_names[node] if node_names is not None else node for node in dset })
+        n_dsets += 1
+        print(sorted({ node_names[node] if node_names is not None else node for node in dset }))
+    print('({0} Dsets in total)'.format(n_dsets))
     print()
 
 def scc_analyzer(nodes: List[Node], definitions: Definitions, node_names: Dict[Node, str]=None):
@@ -208,7 +217,29 @@ examples: List[Example] = [
       ]
     },
     {
-      'name': '3 SCCs, quorum intersection',
+      'name': 'ex:1scc-mod',
+      'nodes': list(range(1,6)),
+      'node_names': None,
+      'quorum_slice_definitions': slices_to_definitions({
+            1: [{1,2}, {1,3}, {1,4}, {1,5}],
+            2: [{1,2, 3}],
+            3: [{1,3}],
+            4: [{1,4}],
+            5: [{1,5}]
+      }),
+      'analyzers': [
+            scc_analyzer,
+            quorum_analyzer,
+            eigenvector_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+      ]
+    },
+    {
+      'name': 'ex:FBAS_fig7',
       'nodes': list(range(1,8)),
       'node_names': None,
       'quorum_slice_definitions': slices_to_definitions({
@@ -231,7 +262,7 @@ examples: List[Example] = [
       ]
     },
     {
-      'name': '4 SCCs, 2 maximal SCCs',
+      'name': 'ex:FBAS_fig7-mod',
       'nodes': list(range(1,9)),
       'node_names': None,
       'quorum_slice_definitions': slices_to_definitions({
@@ -325,6 +356,173 @@ examples: List[Example] = [
                     'children_definitions': []
                 }]
             } for node in range(1, 9)
+        },
+        'analyzers': [
+            scc_analyzer,
+            quorum_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+        ]
+    },
+    {
+        'name': 'ex:stellar-old',
+        'nodes': ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'C'],
+        'node_names': None,
+        'quorum_slice_definitions': {
+            **{
+                node: {
+                    'nodes': {'A1', 'A2', 'A3', 'A4'},
+                    'threshold': 3,
+                    'children_definitions': []
+                } for node in ['A1', 'A2', 'A3', 'A4']
+            },
+            **{
+                node: {
+                    'nodes': set(),
+                    'threshold': 2,
+                    'children_definitions': [
+                        {
+                            'nodes': {'A1', 'A2', 'A3', 'A4'},
+                            'threshold': 3,
+                            'children_definitions': []
+                        },
+                        {
+                            'nodes': {'B1', 'B2', 'B3'},
+                            'threshold': 2,
+                            'children_definitions': []
+                        }
+                    ]
+                } for node in ['B1', 'B2', 'B3']
+            },
+            'C': {
+                'nodes': {'C'},
+                'threshold': 2,
+                'children_definitions': [
+                    {
+                        'nodes': {'A1', 'A2', 'A3', 'A4'},
+                        'threshold': 3,
+                        'children_definitions': []
+                    }
+                ]
+            }
+        },
+        'analyzers': [
+            scc_analyzer,
+            quorum_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+        ]
+    },
+    {
+        'name': 'ex:stellar-new',
+        'nodes': ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'C'],
+        'node_names': None,
+        'quorum_slice_definitions': {
+            node: {
+                'nodes': set(),
+                'threshold': 3,
+                'children_definitions': [
+                    {
+                        'nodes': {'A1', 'A2', 'A3', 'A4'},
+                        'threshold': 3,
+                        'children_definitions': []
+                    },
+                    {
+                        'nodes': {'B1', 'B2', 'B3'},
+                        'threshold': 2,
+                        'children_definitions': []
+                    },
+                    {
+                        'nodes': {'C'},
+                        'threshold': 1,
+                        'children_definitions': []
+                    }
+                ]
+            } for node in ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'C']
+        },
+        'analyzers': [
+            scc_analyzer,
+            quorum_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+        ]
+    },
+    {
+        'name': 'ex:stellar-new-2',
+        'nodes': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5'],
+        'node_names': None,
+        'quorum_slice_definitions': {
+            node: get_normalized_definition({
+                'nodes': set(),
+                'threshold': 2,
+                'children_definitions': [
+                    {
+                        'nodes': {'A1', 'A2', 'A3'},
+                        'threshold': 2,
+                        'children_definitions': []
+                    },
+                    {
+                        'nodes': {'B1', 'B2', 'B3'},
+                        'threshold': 2,
+                        'children_definitions': []
+                    },
+                    {
+                        'nodes': {'C1', 'C2', 'C3', 'C4', 'C5'},
+                        'threshold': 3,
+                        'children_definitions': []
+                    },
+                ]
+            }, node) for node in ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
+        },
+        'analyzers': [
+            scc_analyzer,
+            quorum_analyzer,
+            subgraph_analyzer,
+            quorum_eigenvector_analyzer,
+            quorum_subgraph_analyzer,
+            befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            hierarchical_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+            minimal_befouledness_lgs_analyzer(lambda ill_behaved_nodes: 1/2**len(ill_behaved_nodes), lambda M: 0.5 / numpy.linalg.norm(M, 2)),
+        ]
+    },
+    {
+        'name': 'ex:stellar-new-3',
+        'nodes': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5'],
+        'node_names': None,
+        'quorum_slice_definitions': {
+            node: get_normalized_definition({
+                'nodes': set(),
+                'threshold': 2,
+                'children_definitions': [
+                    {
+                        'nodes': {'A1', 'A2', 'A3'},
+                        'threshold': 2,
+                        'children_definitions': []
+                    },
+                    {
+                        'nodes': {'B1', 'B2', 'B3'},
+                        'threshold': 2,
+                        'children_definitions': []
+                    },
+                    {
+                        'nodes': {'C1', 'C2', 'C3', 'C4', 'C5'},
+                        'threshold': 4,
+                        'children_definitions': []
+                    },
+                ]
+            }, node) for node in ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
         },
         'analyzers': [
             scc_analyzer,
@@ -474,5 +672,8 @@ for example in examples:
     print()
     print('Running {0}'.format(example['name']))
     for analyzer in example['analyzers']:
-        analyzer(example['nodes'], example['quorum_slice_definitions'], example['node_names'])
+        quorum_slice_definitions = {
+            node: get_normalized_definition(definition, node) for node, definition in example['quorum_slice_definitions'].items()
+        }
+        analyzer(example['nodes'], quorum_slice_definitions, example['node_names'])
 
