@@ -1,5 +1,7 @@
 """Test graph utilities"""
-from .graph import get_transpose_graph, get_indegrees, get_induced_subgraph, get_dependencies
+import numpy
+from .graph import get_adjacency_matrix, get_transpose_graph, get_indegrees, \
+    get_induced_subgraph, get_dependencies
 
 GRAPH = {
         1: {2, 3},
@@ -33,3 +35,13 @@ def test_get_dependencies():
     assert get_dependencies(GRAPH, 1) == {2, 3}
     assert get_dependencies(GRAPH, 2) == {3}
     assert get_dependencies(GRAPH, 3) == {2}
+
+def test_get_adjacency_matrix():
+    """Test get_adjacency_matrix() with a graph"""
+    matrix = get_adjacency_matrix([1, 2, 3], GRAPH)
+    expected_matrix = numpy.array([
+        [0, 1, 1],
+        [0, 0, 1],
+        [0, 1, 0]
+    ])
+    numpy.testing.assert_array_equal(matrix, expected_matrix)

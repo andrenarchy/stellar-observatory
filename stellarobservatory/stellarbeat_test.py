@@ -1,6 +1,6 @@
 """Stellarbeat tests"""
 
-from stellarobservatory.stellarbeat import get_nodes_from_stellarbeat
+from .stellarbeat import get_nodes_from_stellarbeat
 
 def test_stellarbeat_nodes():
     """Test get_nodes_from_stellarbeat()"""

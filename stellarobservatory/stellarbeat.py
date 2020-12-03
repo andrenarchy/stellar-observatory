@@ -28,6 +28,8 @@ def get_definition_from_stellarbeat_quorum_set(quorum_set: QuorumSet) -> Definit
     }
 
 StellarbeatNode = TypedDict('StellarbeatNode', {
+    # https://github.com/PyCQA/pylint/issues/3882
+    # pylint: disable=unsubscriptable-object
     'publicKey': str,
     'quorumSet': QuorumSet,
     'name': Optional[str]
