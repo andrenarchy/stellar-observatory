@@ -107,10 +107,12 @@ def get_hierarchical_intactness_matrix(nodes: List[Node], definitions: Definitio
     for scc_index in scc_graph.keys():
         scc_dependencies = get_dependencies(scc_graph, scc_index)
         dependencies: Set[Node] = set()
-        [dependencies.update(sccs[dependency]) for dependency in scc_dependencies]
+        for dependency in scc_dependencies:
+            dependencies.update(sccs[dependency])
         scc_dependents = get_dependencies(scc_graph_transpose, scc_index)
         dependents: Set[Node] = set()
-        [dependents.update(sccs[dependent]) for dependent in scc_dependents]
+        for dependent in scc_dependents:
+            dependents.update(sccs[dependent])
 
         for ill_behaved_nodes in powerset(dependencies.union(sccs[scc_index])):
             if ill_behaved_nodes == set() or ill_behaved_nodes == set(nodes):

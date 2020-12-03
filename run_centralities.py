@@ -187,11 +187,6 @@ class Example(Generic[Node], TypedDict):
 satoshipay_de_fra = 'GC5SXLNAM3C4NMGK2PXK4R34B5GNZ47FYQ24ZIBFDFOCU6D4KBN4POAE'
 stellar_network = get_from_seed_node(satoshipay_de_fra)
 
-def slices_to_definitions(slices_by_node: Dict[Node, List[Nodes]]):
-    return {
-        node: quorum_slice_definition.quorum_slices_to_definition(quorum_slices)
-        for node, quorum_slices in slices_by_node.items()
-    }
 
 examples: List[Example] = [
     {
