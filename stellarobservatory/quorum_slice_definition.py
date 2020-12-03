@@ -133,3 +133,10 @@ def quorum_slices_to_definition(quorum_slices: List[Nodes]) -> Definition:
             'children_definitions': set()
         } for quorum_slice in quorum_slices]
     }
+
+def quorum_slices_to_definitions(slices_by_node: Dict[Node, List[Nodes]]):
+    '''Returns a quorum slice definition per node for a list of quorum slices per node'''
+    return {
+        node: quorum_slices_to_definition(quorum_slices)
+        for node, quorum_slices in slices_by_node.items()
+    }
