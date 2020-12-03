@@ -37,6 +37,7 @@ def get_dependencies(graph: Graph, node: Node):
     return dependencies
 
 def get_adjacency_matrix(node_list: List[Node], graph: Graph):
+    """Get the adjacency matrix of a graph"""
     node_to_index = { node: index for index, node in enumerate(node_list) }
     M = numpy.zeros((len(node_list), len(node_list)), dtype=int)
     for node in node_list:
