@@ -1,7 +1,7 @@
 """Utilities for graphs"""
+from typing import Dict, List, Set, TypeVar
 
 import numpy
-from typing import Dict, List, Set, TypeVar
 
 Node = TypeVar('Node')
 Nodes = Set[Node]
@@ -38,10 +38,13 @@ def get_dependencies(graph: Graph, node: Node):
 
 def get_adjacency_matrix(node_list: List[Node], graph: Graph):
     """Get the adjacency matrix of a graph"""
-    node_to_index = { node: index for index, node in enumerate(node_list) }
-    M = numpy.zeros((len(node_list), len(node_list)), dtype=int)
+    node_to_index = {node: index for index, node in enumerate(node_list)}
+    adjacency_matrix = numpy.zeros((len(node_list), len(node_list)), dtype=int)
     for node in node_list:
         for dependency in graph[node]:
             if dependency != node:
-                M[node_to_index[node], node_to_index[dependency]] = 1
-    return M
+                adjacency_matrix[
+                    node_to_index[node],
+                    node_to_index[dependency]
+                    ] = 1
+    return adjacency_matrix

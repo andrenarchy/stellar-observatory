@@ -1,6 +1,7 @@
 """Test graph utilities"""
 import numpy
-from .graph import get_adjacency_matrix, get_transpose_graph, get_indegrees, get_induced_subgraph, get_dependencies
+from .graph import get_adjacency_matrix, get_transpose_graph, get_indegrees, \
+    get_induced_subgraph, get_dependencies
 
 GRAPH = {
         1: {2, 3},

@@ -10,16 +10,16 @@ from .centralities import get_eigenvector_centralities, \
 from .quorum_slice_definition import quorum_slices_to_definitions
 
 
-
-NODES = [1, 2, 3, 4, 5]
-QUORUM_SLICES = {
+NODES = {1, 2, 3, 4, 5}
+NODES_LIST = list(NODES)
+SLICES_BY_NODE = {
     1: [{1, 2}, {1, 3}, {1, 4}, {1, 5}],
     2: [{1, 2}, {2, 3}],
     3: [{1, 3}],
     4: [{1, 4}],
     5: [{1, 5}]
 }
-DEFINITIONS = quorum_slices_to_definitions(QUORUM_SLICES)
+DEFINITIONS = quorum_slices_to_definitions(SLICES_BY_NODE)
 
 def get_ill_behaved_weight(ill_behaved_nodes: Set[Node]) -> float:
     """Compute weights for intactness-based centralities"""
@@ -31,31 +31,32 @@ def get_mu(matrix: numpy.array) -> float:
 
 def test_get_eigenvector_centralities():
     """Test get_eigenvector_centralities()"""
-    centralities = get_eigenvector_centralities(NODES, DEFINITIONS)
+    centralities = get_eigenvector_centralities(NODES_LIST, DEFINITIONS)
     desired_centralities = [1., 0.472834, 0.696406, 0.472834, 0.472834]
     assert_allclose(centralities, desired_centralities, rtol=1e-5)
 
 def test_get_subgraph_centralities():
     """Test get_subgraph_centralities()"""
-    centralities = get_subgraph_centralities(NODES, DEFINITIONS)
+    centralities = get_subgraph_centralities(NODES_LIST, DEFINITIONS)
     desired_centralities = [1., 0.475507, 0.475507, 0.424363, 0.424363]
     assert_allclose(centralities, desired_centralities, rtol=1e-5)
 
 def test_get_quorum_eigenvector_centralities():
     """Test get_quorum_eigenvector_centralities()"""
-    centralities = get_quorum_eigenvector_centralities(NODES, DEFINITIONS)
+    centralities = get_quorum_eigenvector_centralities(NODES_LIST, DEFINITIONS)
     desired_centralities = [1., 0.584192, 0.584192, 0.584192, 0.584192]
     assert_allclose(centralities, desired_centralities, rtol=1e-5)
 
 def test_get_quorum_subgraph_centralities():
     """Test get_quorum_subgraph_centralities()"""
-    centralities = get_quorum_subgraph_centralities(NODES, DEFINITIONS)
+    centralities = get_quorum_subgraph_centralities(NODES_LIST, DEFINITIONS)
     desired_centralities = [1., 0.520563, 0.520563, 0.520563, 0.520563]
     assert_allclose(centralities, desired_centralities, rtol=1e-5)
 
 def test_get_intactness_ls_centralities():
     """Test get_intactness_ls_centralities()"""
-    centralities = get_intactness_ls_centralities(NODES, DEFINITIONS, get_ill_behaved_weight,
+    centralities = get_intactness_ls_centralities(NODES_LIST, DEFINITIONS,
+                                                  get_ill_behaved_weight,
                                                   get_mu)
     desired_centralities = [1., 0.606552, 0.699301, 0.647041, 0.647041]
     assert_allclose(centralities, desired_centralities, rtol=1e-5)
@@ -63,6 +64,6 @@ def test_get_intactness_ls_centralities():
 def test_get_hierarchical_intactness_ls_centralities():
     """Test get_hierarchical_intactness_ls_centralities()"""
     centralities = get_hierarchical_intactness_ls_centralities(
-        NODES, DEFINITIONS, get_ill_behaved_weight, get_mu)
+        NODES_LIST, DEFINITIONS, get_ill_behaved_weight, get_mu)
     desired_centralities = [1., 0.606552, 0.699301, 0.647041, 0.647041]
     assert_allclose(centralities, desired_centralities, rtol=1e-5)

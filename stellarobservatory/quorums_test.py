@@ -2,24 +2,26 @@
 from .quorums import enumerate_quorums, contains_slice
 
 
+NODES = set(range(1, 8))
+SLICES_BY_NODE = {
+    1: [{1, 2, 3, 7}],
+    2: [{1, 2, 3, 7}],
+    3: [{1, 2, 3, 7}],
+    4: [{4, 5, 6, 7}],
+    5: [{4, 5, 6, 7}],
+    6: [{4, 5, 6, 7}],
+    7: [{7}],
+}
+
 def test_enumerate_quorums():
     """Test enumerate_quorums() with simple example"""
-    slices_by_node = {
-        1: [{1, 2, 3, 7}],
-        2: [{1, 2, 3, 7}],
-        3: [{1, 2, 3, 7}],
-        4: [{4, 5, 6, 7}],
-        5: [{4, 5, 6, 7}],
-        6: [{4, 5, 6, 7}],
-        7: [{7}],
-    }
 
     def ex28_fbas(nodes_subset, node) -> bool:
-        return contains_slice(nodes_subset, slices_by_node, node)
+        return contains_slice(nodes_subset, SLICES_BY_NODE, node)
 
     quorums = {
         frozenset(quorum)
-        for quorum in enumerate_quorums((ex28_fbas, {1, 2, 3, 4, 5, 6, 7}))
+        for quorum in enumerate_quorums((ex28_fbas, NODES))
     }
     assert quorums == {frozenset({7}),
                        frozenset({4, 5, 6, 7}),

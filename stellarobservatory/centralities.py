@@ -1,5 +1,6 @@
 """Centralities"""
-from itertools import chain, combinations
+# pylint: disable=invalid-name
+from itertools import combinations
 from typing import Callable, Dict, FrozenSet, List, Set
 
 import numpy
@@ -8,7 +9,7 @@ from scipy.linalg import eig, expm
 from .intactness import get_intact_nodes
 from .quorums import enumerate_quorums
 from .quorum_slice_definition import Definitions, get_is_slice_contained, get_trust_graph
-from .utils.graph import get_adjacency_matrix, get_dependencies, \
+from .utils.graph import Graph, get_adjacency_matrix, get_dependencies, \
     get_transpose_graph, Node, Nodes
 from .utils.hypergraph import get_hypergraph_adjacency_matrix, get_hypergraph_incidence_matrix
 from .utils.scc import get_strongly_connected_components
@@ -27,8 +28,8 @@ def get_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> nu
     """Compute trust graph subgraph centralities"""
     trust_graph = get_trust_graph(definitions)
     adjacency_matrix = get_adjacency_matrix(nodes, trust_graph)
-    expA = expm(adjacency_matrix)
-    centralities = numpy.diag(expA)
+    exp_adjacency_matrix = expm(adjacency_matrix)
+    centralities = numpy.diag(exp_adjacency_matrix)
     return centralities / numpy.max(centralities)
 
 def get_quorum_eigenvector_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
@@ -47,8 +48,8 @@ def get_quorum_subgraph_centralities(nodes: List[Node], definitions: Definitions
     fbas = (get_is_slice_contained(definitions), set(nodes))
     hyperedge_list = list(enumerate_quorums(fbas))
     adjacency_matrix = get_hypergraph_adjacency_matrix(nodes, hyperedge_list)
-    expA = expm(adjacency_matrix)
-    centralities = numpy.diag(expA)
+    exp_adjacency_matrix = expm(adjacency_matrix)
+    centralities = numpy.diag(exp_adjacency_matrix)
     return centralities / numpy.max(centralities)
 
 def get_quorum_intersection_eigenvector_centralities(nodes: List[Node],
@@ -71,8 +72,8 @@ def get_quorum_intersection_subgraph_centralities(nodes: List[Node],
     quorums = list(enumerate_quorums(fbas))
     hyperedge_list = list([a.intersection(b) for a, b in combinations(quorums, 2)])
     adjacency_matrix = get_hypergraph_adjacency_matrix(nodes, hyperedge_list)
-    expA = expm(adjacency_matrix / numpy.linalg.norm(adjacency_matrix, 2))
-    centralities = numpy.diag(expA)
+    exp_adjacency_matrix = expm(adjacency_matrix / numpy.linalg.norm(adjacency_matrix, 2))
+    centralities = numpy.diag(exp_adjacency_matrix)
     return centralities / numpy.max(centralities)
 
 def get_intactness_matrix(nodes: List[Node], definitions: Definitions,
@@ -106,8 +107,8 @@ def get_intactness_eigenvector_centralities(nodes: List[Node], definitions: Defi
     return centralities / numpy.max(centralities)
 
 def get_intactness_ls_centralities(nodes: List[Node], definitions: Definitions,
-                                    get_ill_behaved_weight: Callable[[Set[Node]], float],
-                                    get_mu: Callable[[numpy.array], float]) -> numpy.array:
+                                   get_ill_behaved_weight: Callable[[Set[Node]], float],
+                                   get_mu: Callable[[numpy.array], float]) -> numpy.array:
     """Compute intactness linear system centralities"""
     M = get_intactness_matrix(nodes, definitions, get_ill_behaved_weight)
     A = numpy.eye(len(nodes)) - get_mu(M) * M
@@ -115,36 +116,45 @@ def get_intactness_ls_centralities(nodes: List[Node], definitions: Definitions,
 
     return centralities / numpy.max(centralities)
 
+def get_scc_dependencies(sccs: List[Nodes], scc_graph: Graph, scc_index: Node):
+    """Get SCC dependencies"""
+    scc_dependencies = get_dependencies(scc_graph, scc_index)
+    dependencies: Set[Node] = set()
+    for dependency in scc_dependencies:
+        dependencies.update(sccs[dependency])
+    return dependencies
+
+def get_scc_dependents(sccs: List[Nodes], scc_graph: Graph, scc_index: Node):
+    """Get SCC dependents"""
+    scc_graph_transpose = get_transpose_graph(scc_graph)
+    scc_dependents = get_dependencies(scc_graph_transpose, scc_index)
+    dependents: Set[Node] = set()
+    for dependent in scc_dependents:
+        dependents.update(sccs[dependent])
+    return dependents
+
 def get_hierarchical_intactness_matrix(nodes: List[Node], definitions: Definitions,
                                        get_ill_behaved_weight: Callable[[Set[Node]], float]
                                        ) -> numpy.array:
     """Compute matrix for hierarchical intactness-based centralities"""
+    # pylint: disable=too-many-locals
     fbas = (get_is_slice_contained(definitions), set(nodes))
     node_to_index = {node: index for index, node in enumerate(nodes)}
     M = numpy.zeros((len(nodes), len(nodes)))
 
     trust_graph = get_trust_graph(definitions)
     sccs, scc_graph = get_strongly_connected_components(trust_graph)
-    scc_graph_transpose = get_transpose_graph(scc_graph)
 
-    for scc_index in scc_graph.keys():
-        scc_dependencies = get_dependencies(scc_graph, scc_index)
-        dependencies: Set[Node] = set()
-        for dependency in scc_dependencies:
-            dependencies.update(sccs[dependency])
-        scc_dependents = get_dependencies(scc_graph_transpose, scc_index)
-        dependents: Set[Node] = set()
-        for dependent in scc_dependents:
-            dependents.update(sccs[dependent])
+    for scc_index, _ in scc_graph.items():
+        dependencies = get_scc_dependencies(sccs, scc_graph, scc_index)
+        dependents = get_scc_dependents(sccs, scc_graph, scc_index)
 
         for ill_behaved_nodes in powerset(dependencies.union(sccs[scc_index])):
             if ill_behaved_nodes == set() or ill_behaved_nodes == set(nodes):
                 continue
-            intact_nodes = get_intact_nodes(fbas, ill_behaved_nodes)
-            befouled_nodes = set(nodes).difference(intact_nodes)
-            induced_befouled_nodes = befouled_nodes.difference(ill_behaved_nodes)
-            affected_befouled_nodes = induced_befouled_nodes.intersection(
-                sccs[scc_index].union(dependents))
+            befouled_nodes = set(nodes) - get_intact_nodes(fbas, ill_behaved_nodes)
+            affected_befouled_nodes = (befouled_nodes - ill_behaved_nodes) & \
+                (sccs[scc_index] | dependents)
             ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
             for ill_behaved_node in ill_behaved_nodes:
                 for affected_befouled_node in affected_befouled_nodes:
