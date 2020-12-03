@@ -17,15 +17,15 @@ def test_enumerate_quorums():
     def ex28_fbas(nodes_subset, node) -> bool:
         return contains_slice(nodes_subset, slices_by_node, node)
 
-    quorums = set([
+    quorums = {
         frozenset(quorum)
         for quorum in enumerate_quorums((ex28_fbas, {1, 2, 3, 4, 5, 6, 7}))
-        ])
+    }
     assert quorums == {frozenset({7}),
-                            frozenset({4, 5, 6, 7}),
-                            frozenset({1, 2, 3, 7}),
-                            frozenset({1, 2, 3, 4, 5, 6, 7})
-                            }
+                       frozenset({4, 5, 6, 7}),
+                       frozenset({1, 2, 3, 7}),
+                       frozenset({1, 2, 3, 4, 5, 6, 7})
+                       }
 
 
 def test_enumerate_quorums_stellar_core():

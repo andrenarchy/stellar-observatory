@@ -1,6 +1,6 @@
 """Tests for enumerate dsets algorithm"""
-from stellarobservatory.dsets import enumerate_dsets
-from stellarobservatory.quorums import contains_slice
+from .dsets import enumerate_dsets
+from .quorums import contains_slice
 
 
 def test_enumerate_dsets():
@@ -12,7 +12,7 @@ def test_enumerate_dsets():
         3: [{1, 2, 3, 7}],
         4: [{4, 5, 6, 7}],
         5: [{4, 5, 6, 7}],
-        6: [{4, 5, 6, 7,8}],
+        6: [{4, 5, 6, 7, 8}],
         7: [{7}],
         8: [{8}]
     }

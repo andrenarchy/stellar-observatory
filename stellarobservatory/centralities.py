@@ -1,17 +1,21 @@
+"""Centralities"""
 from itertools import chain, combinations
-from stellarobservatory.quorums import enumerate_quorums, traverse_quorums
 from typing import Callable, Dict, FrozenSet, List, Set
+
 import numpy
 from scipy.linalg import eig, expm
 
 from .intactness import get_intact_nodes
-from .quorum_slice_definition import Definitions, get_direct_dependencies, get_is_slice_contained, get_trust_graph
-from .utils.graph import get_adjacency_matrix, get_dependencies, get_transpose_graph, Node, Nodes
-from .utils.hypergraph import Hypergraph, get_hypergraph_adjacency_matrix, get_hypergraph_incidence_matrix
+from .quorums import enumerate_quorums
+from .quorum_slice_definition import Definitions, get_is_slice_contained, get_trust_graph
+from .utils.graph import get_adjacency_matrix, get_dependencies, \
+    get_transpose_graph, Node, Nodes
+from .utils.hypergraph import get_hypergraph_adjacency_matrix, get_hypergraph_incidence_matrix
 from .utils.scc import get_strongly_connected_components
 from .utils.sets import powerset
 
 def get_eigenvector_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+    """Compute trust graph eigenvector centralities"""
     trust_graph = get_trust_graph(definitions)
     adjacency_matrix = get_adjacency_matrix(nodes, trust_graph)
     eigenvalues, eigenvectors = eig(adjacency_matrix, left=True, right=False)
@@ -20,6 +24,7 @@ def get_eigenvector_centralities(nodes: List[Node], definitions: Definitions) ->
     return centralities / numpy.max(centralities)
 
 def get_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+    """Compute trust graph subgraph centralities"""
     trust_graph = get_trust_graph(definitions)
     adjacency_matrix = get_adjacency_matrix(nodes, trust_graph)
     expA = expm(adjacency_matrix)
@@ -27,6 +32,7 @@ def get_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> nu
     return centralities / numpy.max(centralities)
 
 def get_quorum_eigenvector_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+    """Compute quorum eigenvector centralities"""
     fbas = (get_is_slice_contained(definitions), set(nodes))
     hyperedge_list = list(enumerate_quorums(fbas))
     incidence_matrix = get_hypergraph_incidence_matrix(nodes, hyperedge_list)
@@ -37,6 +43,7 @@ def get_quorum_eigenvector_centralities(nodes: List[Node], definitions: Definiti
     return centralities / numpy.max(centralities)
 
 def get_quorum_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+    """Compute quorum subgraph centralities"""
     fbas = (get_is_slice_contained(definitions), set(nodes))
     hyperedge_list = list(enumerate_quorums(fbas))
     adjacency_matrix = get_hypergraph_adjacency_matrix(nodes, hyperedge_list)
@@ -44,7 +51,9 @@ def get_quorum_subgraph_centralities(nodes: List[Node], definitions: Definitions
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
-def get_quorum_intersection_eigenvector_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+def get_quorum_intersection_eigenvector_centralities(nodes: List[Node],
+                                                     definitions: Definitions) -> numpy.array:
+    """Compute quorum intersection eigenvector centralities"""
     fbas = (get_is_slice_contained(definitions), set(nodes))
     quorums = list(enumerate_quorums(fbas))
     hyperedge_list = list([a.intersection(b) for a, b in combinations(quorums, 2)])
@@ -55,7 +64,9 @@ def get_quorum_intersection_eigenvector_centralities(nodes: List[Node], definiti
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_quorum_intersection_subgraph_centralities(nodes: List[Node], definitions: Definitions) -> numpy.array:
+def get_quorum_intersection_subgraph_centralities(nodes: List[Node],
+                                                  definitions: Definitions) -> numpy.array:
+    """Compute quorum intersection subgraph centralities"""
     fbas = (get_is_slice_contained(definitions), set(nodes))
     quorums = list(enumerate_quorums(fbas))
     hyperedge_list = list([a.intersection(b) for a, b in combinations(quorums, 2)])
@@ -64,9 +75,11 @@ def get_quorum_intersection_subgraph_centralities(nodes: List[Node], definitions
     centralities = numpy.diag(expA)
     return centralities / numpy.max(centralities)
 
-def get_intactness_matrix(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_intactness_matrix(nodes: List[Node], definitions: Definitions,
+                          get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+    """Compute matrix for intactness-based centralities"""
     fbas = (get_is_slice_contained(definitions), set(nodes))
-    node_to_index = { node: index for index, node in enumerate(nodes) }
+    node_to_index = {node: index for index, node in enumerate(nodes)}
     M = numpy.zeros((len(nodes), len(nodes)))
 
     for ill_behaved_nodes in powerset(nodes):
@@ -78,26 +91,36 @@ def get_intactness_matrix(nodes: List[Node], definitions: Definitions, get_ill_b
         ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
         for ill_behaved_node in ill_behaved_nodes:
             for induced_befouled_node in induced_befouled_nodes:
-                M[node_to_index[ill_behaved_node], node_to_index[induced_befouled_node]] += ill_behaved_weight
+                M[node_to_index[ill_behaved_node], \
+                    node_to_index[induced_befouled_node]] += ill_behaved_weight
     return M
 
-def get_intactness_eigenvector_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_intactness_eigenvector_centralities(nodes: List[Node], definitions: Definitions,
+                                            get_ill_behaved_weight: Callable[[Set[Node]], float]
+                                            ) -> numpy.array:
+    """Compute intactness eigenvector centralities"""
     M = get_intactness_matrix(nodes, definitions, get_ill_behaved_weight)
     eigenvalues, eigenvectors = eig(M)
     index = numpy.argsort(numpy.real(eigenvalues))[-1]
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_intactness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float], get_mu: Callable[[numpy.array], float]) -> numpy.array:
+def get_intactness_ls_centralities(nodes: List[Node], definitions: Definitions,
+                                    get_ill_behaved_weight: Callable[[Set[Node]], float],
+                                    get_mu: Callable[[numpy.array], float]) -> numpy.array:
+    """Compute intactness linear system centralities"""
     M = get_intactness_matrix(nodes, definitions, get_ill_behaved_weight)
     A = numpy.eye(len(nodes)) - get_mu(M) * M
     centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
 
     return centralities / numpy.max(centralities)
 
-def get_hierarchical_intactness_matrix(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_hierarchical_intactness_matrix(nodes: List[Node], definitions: Definitions,
+                                       get_ill_behaved_weight: Callable[[Set[Node]], float]
+                                       ) -> numpy.array:
+    """Compute matrix for hierarchical intactness-based centralities"""
     fbas = (get_is_slice_contained(definitions), set(nodes))
-    node_to_index = { node: index for index, node in enumerate(nodes) }
+    node_to_index = {node: index for index, node in enumerate(nodes)}
     M = numpy.zeros((len(nodes), len(nodes)))
 
     trust_graph = get_trust_graph(definitions)
@@ -120,29 +143,44 @@ def get_hierarchical_intactness_matrix(nodes: List[Node], definitions: Definitio
             intact_nodes = get_intact_nodes(fbas, ill_behaved_nodes)
             befouled_nodes = set(nodes).difference(intact_nodes)
             induced_befouled_nodes = befouled_nodes.difference(ill_behaved_nodes)
-            affected_befouled_nodes = induced_befouled_nodes.intersection(sccs[scc_index].union(dependents))
+            affected_befouled_nodes = induced_befouled_nodes.intersection(
+                sccs[scc_index].union(dependents))
             ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
             for ill_behaved_node in ill_behaved_nodes:
                 for affected_befouled_node in affected_befouled_nodes:
-                    M[node_to_index[ill_behaved_node], node_to_index[affected_befouled_node]] += ill_behaved_weight
+                    M[node_to_index[ill_behaved_node], \
+                        node_to_index[affected_befouled_node]] += ill_behaved_weight
     return M
 
-def get_hierarchical_intactness_eigenvector_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_hierarchical_intactness_eigenvector_centralities(
+        nodes: List[Node], definitions: Definitions,
+        get_ill_behaved_weight: Callable[[Set[Node]], float]
+        ) -> numpy.array:
+    """Compute hierarchical intactness eigenvector centralities"""
     M = get_hierarchical_intactness_matrix(nodes, definitions, get_ill_behaved_weight)
     eigenvalues, eigenvectors = eig(M)
     index = numpy.argsort(numpy.real(eigenvalues))[-1]
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_hierarchical_intactness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float], get_mu: Callable[[numpy.array], float]) -> numpy.array:
+def get_hierarchical_intactness_ls_centralities(
+        nodes: List[Node], definitions: Definitions,
+        get_ill_behaved_weight: Callable[[Set[Node]], float],
+        get_mu: Callable[[numpy.array], float]
+        ) -> numpy.array:
+    """Compute hierarchical intactness linear system centralities"""
     M = get_hierarchical_intactness_matrix(nodes, definitions, get_ill_behaved_weight)
     A = numpy.eye(len(nodes)) - get_mu(M) * M
     centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))
     return centralities / numpy.max(centralities)
 
-def get_minimal_intactness_matrix(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_minimal_intactness_matrix(
+        nodes: List[Node], definitions: Definitions,
+        get_ill_behaved_weight: Callable[[Set[Node]], float]
+        ) -> numpy.array:
+    """Compute matrix for minimal intactness-based centralities"""
     fbas = (get_is_slice_contained(definitions), set(nodes))
-    node_to_index = { node: index for index, node in enumerate(nodes) }
+    node_to_index = {node: index for index, node in enumerate(nodes)}
     M = numpy.zeros((len(nodes), len(nodes)))
 
     # note: this assumes that powerset() iterates from smallest to largest subset
@@ -160,7 +198,8 @@ def get_minimal_intactness_matrix(nodes: List[Node], definitions: Definitions, g
             smaller_induced_befouled_nodes = ill_behaved_to_induced_befouled[
                 frozenset(ill_behaved_nodes.difference({ill_behaved_node}))
             ]
-            if smaller_induced_befouled_nodes.difference({ill_behaved_node}) >= induced_befouled_nodes:
+            difference = smaller_induced_befouled_nodes.difference({ill_behaved_node})
+            if difference >= induced_befouled_nodes:
                 return False
         return True
 
@@ -174,17 +213,27 @@ def get_minimal_intactness_matrix(nodes: List[Node], definitions: Definitions, g
         ill_behaved_weight = get_ill_behaved_weight(ill_behaved_nodes)
         for ill_behaved_node in ill_behaved_nodes:
             for induced_befouled_node in induced_befouled_nodes:
-                M[node_to_index[ill_behaved_node], node_to_index[induced_befouled_node]] += ill_behaved_weight
+                M[node_to_index[ill_behaved_node], \
+                    node_to_index[induced_befouled_node]] += ill_behaved_weight
     return M
 
-def get_minimal_intactness_eigenvector_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float]) -> numpy.array:
+def get_minimal_intactness_eigenvector_centralities(
+        nodes: List[Node], definitions: Definitions,
+        get_ill_behaved_weight: Callable[[Set[Node]], float]
+        ) -> numpy.array:
+    """Compute minimal intactness eigenvector centralities"""
     M = get_minimal_intactness_matrix(nodes, definitions, get_ill_behaved_weight)
     eigenvalues, eigenvectors = eig(M)
     index = numpy.argsort(numpy.real(eigenvalues))[-1]
     centralities = numpy.abs(eigenvectors[:, index])
     return centralities / numpy.max(centralities)
 
-def get_minimal_intactness_lgs_centralities(nodes: List[Node], definitions: Definitions, get_ill_behaved_weight: Callable[[Set[Node]], float], get_mu: Callable[[numpy.array], float]) -> numpy.array:
+def get_minimal_intactness_ls_centralities(
+        nodes: List[Node], definitions: Definitions,
+        get_ill_behaved_weight: Callable[[Set[Node]], float],
+        get_mu: Callable[[numpy.array], float]
+        ) -> numpy.array:
+    """Compute minimal intactness linear system centralities"""
     M = get_minimal_intactness_matrix(nodes, definitions, get_ill_behaved_weight)
     A = numpy.eye(len(nodes)) - get_mu(M) * M
     centralities = numpy.linalg.solve(A, numpy.ones(len(nodes)))

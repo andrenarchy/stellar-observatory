@@ -1,12 +1,12 @@
 """Algorithm for determining B-intact nodes given a set B of nodes."""
-from typing import Tuple, Callable, Set, Type, cast
+from typing import Tuple, Callable, cast
 
 from stellarobservatory.quorum_intersection import quorum_intersection
 from stellarobservatory.quorums import greatest_quorum
 from .utils.graph import Node, Nodes
 
 def get_intact_nodes(fbas: Tuple[Callable[[Nodes, Node], bool], Nodes],
-                 b_nodes: Nodes):
+                     b_nodes: Nodes):
     """
     Takes an FBAS F (having quorum intersection) with set of nodes V and B ⊆ V and
     returns the set of all B-intact nodes.

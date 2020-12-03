@@ -1,5 +1,5 @@
 """Dsets"""
-from typing import Callable, Generator, Tuple, Set, Type, cast
+from typing import Callable, Tuple
 from .utils.graph import Node, Nodes
 from .quorums import enumerate_quorums
 from .quorum_intersection import quorum_intersection
@@ -8,6 +8,7 @@ def enumerate_dsets(fbas: Tuple[Callable[[Nodes, Node], bool], Nodes]):
     """Enumerate all dsets of FBAS F (given by the pair (function(set<T>, T) -> bool, set))."""
     (is_slice_contained, all_nodes) = fbas
     yield all_nodes
+    dset_candidate = None
     for quorum in enumerate_quorums(fbas):
         dset_candidate = all_nodes.difference(quorum)
 

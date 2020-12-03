@@ -1,6 +1,6 @@
 """Tests for Torstens's intactNode Algorithm"""
-from stellarobservatory.intactness import get_intact_nodes
-from stellarobservatory.quorums import contains_slice
+from .intactness import get_intact_nodes
+from .quorums import contains_slice
 
 
 def test_get_intact_nodes():

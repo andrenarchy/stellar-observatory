@@ -1,6 +1,6 @@
 """Torstens's quorum enumeration"""
 
-from typing import Callable, Generator, Tuple, Set, Type, cast
+from typing import Callable, Generator, Tuple, Set, cast
 from .utils.graph import Node, Nodes
 
 # Allow for defining an FBAS as a function: (set<T>, T, set<T>) -> bool.

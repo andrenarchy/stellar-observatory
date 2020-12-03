@@ -1,7 +1,7 @@
 """Test for Torstens's quorum intersection checker (Lachowski variant)"""
 
-from stellarobservatory.quorum_intersection import quorum_intersection, is_quorum
-from stellarobservatory.quorums import contains_slice
+from .quorum_intersection import quorum_intersection, is_quorum
+from .quorums import contains_slice
 
 
 def test_has_quorum_intersection_false():
