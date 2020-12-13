@@ -5,7 +5,7 @@
 
 Stellar Observatory is a Python package for analyzing the Stellar network. It contains experimental and non-optimized code that is used for conducting research on quorums, quorum slices, and other aspects of the Stellar network.
 
-This work is supported by a research grant in the [Stellar academic research program](https://www.stellar.org/stellar-academic-research-program/) of the [Stellar Development Foundation](https://www.stellar.org/).
+This work is supported by a research grant in the Stellar academic research program of the [Stellar Development Foundation](https://www.stellar.org/).
 
 ## Installation
 
